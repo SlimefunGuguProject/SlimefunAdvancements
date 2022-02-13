@@ -5,7 +5,7 @@
     <modelVersion>4.0.0</modelVersion>
 
     <groupId>me.char321</groupId>
-    <artifactId>sfadvancements</artifactId>
+    <artifactId>SlimefunAdvancements</artifactId>
     <version>MODIFIED</version>
     <packaging>jar</packaging>
 
@@ -39,6 +39,7 @@
     </repositories>
 
     <build>
+        <finalName>${project.name}-${project.version}</finalName>
         <plugins>
             <plugin>
                 <groupId>org.apache.maven.plugins</groupId>

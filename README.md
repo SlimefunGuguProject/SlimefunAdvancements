@@ -2,6 +2,21 @@
 
 这是一个 Slimefun 附属，可以给 Slimefun 添加一个可配置的进度系统。
 
+## 下载
+
+**自动更新**: 汉化版构建#1及以后版本包含自动更新功能，默认开启。
+
+点击这里下载 SlimefunAdvancements: [下载 SlimefunAdvancements](https://builds.guizhanss.net/ybw0014/SlimefunAdvancements-CN/main)
+
+<p align="center">
+  <a href="https://github.com/ybw0014/SlimefunAdvancements-CN/actions/workflows/maven.yml">
+    <img src="https://github.com/ybw0014/SlimefunAdvancements-CN/actions/workflows/maven.yml/badge.svg" alt="Java CI"/>
+  </a>
+  <a href="https://builds.guizhanss.net/ybw0014/SlimefunAdvancements-CN/main">
+    <img src="https://builds.guizhanss.net/f/ybw0014/SlimefunAdvancements-CN/main/badge.svg" alt="Build status"/>
+  </a>
+</p>
+
 ## 配置
 
 你可以在 `plugins/SFAdvancements/` 文件夹中查看配置文件
