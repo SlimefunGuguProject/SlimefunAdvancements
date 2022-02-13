@@ -14,7 +14,7 @@ public class AdvancementsItemGroup extends FlexItemGroup {
     public AdvancementsItemGroup() {
         super(
                 new NamespacedKey(SFAdvancements.instance(), "advancements"),
-                new CustomItemStack(Material.FILLED_MAP, "&9Advancements"),
+                new CustomItemStack(Material.FILLED_MAP, "&9进度"),
                 0);
     }
 

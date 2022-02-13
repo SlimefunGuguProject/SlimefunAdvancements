@@ -14,6 +14,7 @@ import me.char321.sfadvancements.core.gui.AdvGUIManager;
 import me.char321.sfadvancements.core.registry.AdvancementsRegistry;
 import me.char321.sfadvancements.core.tasks.AutoSaveTask;
 import me.char321.sfadvancements.util.ConfigUtils;
+import net.guizhanss.guizhanlib.updater.GuizhanBuildsUpdater;
 import org.bstats.bukkit.Metrics;
 import org.bukkit.Bukkit;
 import org.bukkit.configuration.file.FileConfiguration;
@@ -42,7 +43,7 @@ public final class SFAdvancements extends JavaPlugin implements SlimefunAddon {
     public void onEnable() {
         instance = this;
 
-        info("Checking for updates...");
+        info("正在检查更新...");
         autoUpdate();
 
         Bukkit.getPluginManager().registerEvents(guiManager, this);
@@ -82,9 +83,9 @@ public final class SFAdvancements extends JavaPlugin implements SlimefunAddon {
 
     private void autoUpdate() {
         Config config = new Config(this);
-        if (config.getBoolean("auto-update") && !getDescription().getVersion().contains("MODIFIED")) {
-            GitHubBuildsUpdater updater = new GitHubBuildsUpdater(this, this.getFile(), "qwertyuioplkjhgfd/SlimefunAdvancements/main");
-            updater.start();
+        if (config.getBoolean("auto-update") &&
+            getDescription().getVersion().startsWith("Build ")) {
+            new GuizhanBuildsUpdater(this, this.getFile(), "ybw0014", "SlimefunAdvancements-CN", "main", false).start();
         }
     }
 

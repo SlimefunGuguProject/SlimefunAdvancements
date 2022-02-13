@@ -12,7 +12,7 @@ public class AutoSaveTask extends BukkitRunnable {
         try {
             SFAdvancements.getAdvManager().save();
         } catch (IOException e) {
-            SFAdvancements.logger().log(Level.SEVERE, e, () -> "Could not auto-save advancements!");
+            SFAdvancements.logger().log(Level.SEVERE, e, () -> "无法保存进度!");
         }
     }
 }

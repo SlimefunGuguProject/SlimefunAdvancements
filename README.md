@@ -1,30 +1,34 @@
-# SlimefunAdvancements
+# SlimefunAdvancements 粘液科技进度
 
-a slimefun addon that lets you do things like complete and configure advancements
+这是一个 Slimefun 附属，可以给 Slimefun 添加一个可配置的进度系统。
 
-[download here](https://thebusybiscuit.github.io/builds/qwertyuioplkjhgfd/SlimefunAdvancements/main/)
+## 配置
 
-## Configuration
-
-The configuration files can be found in your `plugins/SFAdvancements/` folder.
+你可以在 `plugins/SFAdvancements/` 文件夹中查看配置文件
 
 ### groups.yml
 
-Each item in the yml represents an advancement group, where the key is the key of the group.<br>
-The key is used to refer to the group in `advancements.yml`.<br>
-Each group has a `display`, which is an item. It should be an item representation.
+你可以在该配置文件中设置进度的分组信息。
 
-### Item Representation
+分组键名只能使用英文、数字、下划线。
 
-You can represent an item in a few ways.<br>
-1. just a string, the id of the item (either [vanilla material](https://hub.spigotmc.org/javadocs/spigot/org/bukkit/Material.html) or [slimefun item id](https://sf-items.walshy.dev/))
-2. an object with a string `type` (the id of the item), optional string `name`, and optional string list `lore`.
-3. a serialized representaion of the item
+分组会在`advancements.yml`文件中使用，你可以将不同分类的进度分配到不同的分组中。  
+每个分组都可以设置一个展示物品(`display`)，会在游戏内菜单中展示出来。你可以在下一小节了解如何配置展示物品。
 
-You can generate representations of an item by holding the item in your hand in-game and typing `/sfa dumpitem`.<br>
-The results will be displayed in console.
+### 物品设置
 
-Examples of #1 in `groups.yml`
+你可以使用以下方法来展示物品:
+
+- 方法一: 物品ID (可以是 [原版物品ID](https://hub.spigotmc.org/javadocs/spigot/org/bukkit/Material.html) 或者 [粘液科技物品ID](https://sf-items.walshy.dev/) )
+- 方法二: 在`type`字段中指定物品ID，可选`name`字段指定显示名称，可选`lore`字段指定描述
+- 方法三: 序列化
+
+你可以在游戏中手持物品并使用`/sfa dumpitem`指令，在控制台中获得物品的序列化配置。
+
+支持彩色字符`&`。
+
+`groups.yml` 方法一示例:
+
 ```yaml
 my_cool_group:
   display: NETHER_STAR
@@ -33,24 +37,26 @@ my_other_group:
   display: ELECTRIC_MOTOR
 ```
 
-Examples of #2 in `groups.yml`
+`groups.yml` 方法二示例:
+
 ```yaml
 basic:
   display:
     type: SLIME_BALL
-    name: "&fBasic"
+    name: "&f基础"
     lore:
-      - "&7&oThe core spirit of Slimefun."
+      - "&7&o粘液科技的基础部分."
 
 electric:
   display:
     type: REDSTONE
-    name: "&eElectric"
+    name: "&e电力"
     lore:
-      - "&7&oThe center of civilization."
+      - "&7&o文明的中心."
 ```
 
-Example of #3 in `groups.yml`
+`groups.yml` 方法三示例:
+
 ```yaml
 hi:
   display:
@@ -68,90 +74,104 @@ hi:
 
 ### advancements.yml
 
-This is where all your advancements will go.<br>
-Each item represents an advancement, where the key is the key of the advancement.<br>
-(It is stored as a NamespacedKey `sfadvancements:<key>`)<br>
-An advancement contains a group, display, name, criteria, and optional rewards.<br>
+你可以在该配置文件中设置所有的进度。
 
-The group is the id defined in `groups.yml`.
+进度的键名只能使用英文、数字、下划线（将被注册为 NamespacedKey `sfadvancements:<key>`）。
 
-The display is an item, represented as described in Item Representation.
+一个进度必须指定`group`, `display`, `name`, `criteria`  
+可选: `rewards`
 
-The name is what will appear in chat when someone completes the advancement.
+以下为各个部分的说明:
 
-(the display and name support color codes with `&`)
+- `group`: 指定进度组，对应`groups.yml`中定义的键名。
+- `display`: 展示物品，参考 (物品设置)[#物品设置] 部分。
+- `name`: 进度的展示名称，玩家完成进度后会在公屏聊天中展示
+- `criteria`: 完成进度的条件
+- `rewards`: 完成进度后的奖励
 
-The criteria are a section, where each item is a criterion and the key is the criterion key.
+支持彩色字符`&`。
 
-#### criterion
+#### 进度完成条件
 
-The key of the criterion should be unique per advancement (but may share keys in different advancements).<br>
-The string itself doesn't matter, but if no name is specified, it will use the key.<br>
-Each criterion has a name, type, and optional other parameters.
+每个进度可以设置多个条件。
 
-The name is what appears in the gui for progress. 
+同一进度中，每个条件的键名不能重复，但不同进度的条件的键名可以重复。  
+键名只能使用英文、数字、下划线。
 
-The type is the type of criterion. By default, these are the default criterion types:
+如果条件没有指定名称，那么键名将作为名称使用。
+
+一个条件必须指定`type`  
+可选: `name`
+
+以下为各个部分的说明:
+
+- `name`: 条件的名称（其实应该是描述）
+- `type`: 条件的类型
+
+以下为插件自带的可用类型:
+
 - `consume`
-  - for eating items
-  - has an item parameter `item`, which is the item to consume
-  - note that this only works for vanilla consumption, NOT exotic garden fruits for example, use `interact` for that
-  - has an integer parameter `amount`, the number of items to consume
+  - 食用物品
+  - 需要在 `item` 中指定食用的物品（参考 (物品设置)[#物品设置] 部分）
+  - 可以指定食物以及药水，包括粘液科技中的各种肉干，以及异域花园中的部分果汁
+  - **重要**: 请注意，异域花园中的"可食用"水果/植物/食物(实际上是玩家头颅)不适用于该条件，请使用 `interact`
+  - 可以在`amount`指定需要食用的数量
 - `interact`
-  - for right-clicking items
-  - has an item parameter `item`, which is the item to be right-clicked
-  - has an integer parameter `amount`, the number of times to interact
+  - 右键点击使用物品
+  - 需要在 `item` 中指定右键点击的物品（参考 (物品设置)[#物品设置] 部分）
+  - 可以在 `amount` 指定点击的数量
 - `inventory`
-  - for having an item in an inventory
-  - has an item parameter `item`, the item to have in the inventory
-  - this does not check amount, it will trigger when a player has a single item (amount coming soon)
+  - 物品栏中拥有物品
+  - 需要在 `item` 中指定物品（参考 (物品设置)[#物品设置] 部分）
+  - 目前暂不支持设置数量，只要有一个物品就可以触发
 - `multiblock`
-  - for interacting with a slimefun multiblock
-  - has a string parameter `multiblock`, which is the slimefun item id of the multiblock
+  - 与粘液科技中的多方块结构交互
+  - 需要在 `multiblock` 中指定多方块结构的 ID
 - `place`
-  - for placing blocks
-  - has an item parameter `item`, which is the item to place down
-  - has an integer parameter `amount`, which is the number of items to place
-  - note that there is no protection against players repeatedly breaking and replacing the block, so for most items just use one for the amount
+  - 放置方块
+  - 需要在 `item` 中指定需要放置的方块（参考 (物品设置)[#物品设置] 部分）
+  - 可以在 `amount` 指定放置的数量
+  - 目前玩家可以重复在一个位置破坏并放置方块，来完成该条件。建议将数量设置为1个
 - `research`
-  - for completing a research
-  - has a string parameter `research`, which is the namespaced key of the research
-    - namespaced keys have the format "plugin:key", so for slimefun researches, it is "slimefun:research"
-      - ex: "slimefun:ender_talismans"
+  - 完成研究
+  - 需要在 `research` 中指定研究的 NamespacedKey
+    - NamespacedKey 的格式为 "插件:键名", 在 Slimefun 中的研究为 "slimefun:research"
+      - 例如: "slimefun:ender_talismans"
 
-#### rewards
+#### 奖励
 
-The rewards have a different section for different types.<br>
-(for now, the only type is `commands`)<br>
-The name of the section determines the type of reward.
+每个进度可以设置多种奖励（目前仅有`commands`类型)。
 
-Reward types:
+奖励的键名为奖励的类型（必须对应）。
+
+目前有以下奖励类型:
 - command
-  - is a string list, with each line being a command to run
-  - you can refer to the name of the player that completed the advancement via `%p%`
+  - 指令
+  - 一个字符串列表，每一行都是需要执行的指令
+  - 在指令中使用 `%p%` 来表示完成进度的玩家名称
 
-## Permissions
+## 权限
 
-`sfa.command.<command name>`: allows the user to use the command
+`sfa.command.<command name>`: 允许执行对应的指令
 
-## Custom Criteria (developers)
+## 自定义 (developers)
 
-see [api.md](https://github.com/qwertyuioplkjhgfd/SlimefunAdvancements/blob/main/api.md)
+请参阅 [api.md](./api.md)
 
-## TODO:
-- ~~criteria system~~
-  - ~~inventory criteria~~
-  - craft criteria (soon, see [Slimefun/Slimefun4#3439](https://github.com/Slimefun/Slimefun4/pull/3439))
-  - ~~interact criteria~~
-      - ~~place criteria~~
-  - ~~research criteria~~
-- ~~configurability~~
-- rewards
-- add advancements
-- ~~permissions~~
-- load default advancements (from other plugins)
-- better readme, .github, ~~builds page~~
-- tree
-- advancements api (crazy)
-- cheat menu
-- docs
+## TODO 计划中:
+- ~~条件系统~~
+  - ~~物品栏~~
+  - 合成 (等待 [Slimefun/Slimefun4#3439](https://github.com/Slimefun/Slimefun4/pull/3439))
+  - ~~交互~~
+      - ~~放置~~
+  - ~~完成研究~~
+- ~~配置~~
+- 奖励
+- 添加成就
+- ~~权限~~
+- 从其他插件加载进度
+- 更好地说明文件, ~~builds page~~
+- 树状展示
+- 进度 API (crazy)
+- 作弊菜单
+- 文档

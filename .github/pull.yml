@@ -1,0 +1,9 @@
+version: "1"
+rules:
+  - base: main
+    upstream: qwertyuioplkjhgfd:main
+    mergeMethod: merge
+    assignees:
+      - ybw0014
+    conflictReviewers:
+      - ybw0014

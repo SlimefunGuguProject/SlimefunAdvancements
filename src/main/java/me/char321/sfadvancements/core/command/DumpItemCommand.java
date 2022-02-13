@@ -22,18 +22,18 @@ public class DumpItemCommand implements SubCommand {
     @Override
     public boolean onExecute(CommandSender sender, Command command, String label, String[] args) {
         if(!(sender instanceof Player)) {
-            sender.sendMessage("you must be a player to execute this command");
+            sender.sendMessage("只有玩家才能执行该指令");
             return false;
         }
 
         Player p = (Player) sender;
 
-        sender.sendMessage("Representing the item in your hand in yml...");
+        sender.sendMessage("正在生成序列化配置...");
         ItemStack item = p.getInventory().getItemInMainHand();
-        SFAdvancements.info("Representing " + item);
+        SFAdvancements.info("物品序列化配置: " + item);
 
         if(!item.hasItemMeta()) {
-            SFAdvancements.info("This item can be represented with just the string \n" + item.getType().name());
+            SFAdvancements.info("该物品可以直接使用该ID表示: \n" + item.getType().name());
         }
 
         ItemMeta im = item.getItemMeta();
@@ -44,7 +44,7 @@ public class DumpItemCommand implements SubCommand {
         if (itemData.isPresent()) {
             String id = itemData.get();
             if (SlimefunUtils.isItemSimilar(item, SlimefunItem.getById(id).getItem(), true)) {
-                SFAdvancements.info("This item can be represented with just the string \n" + id);
+                SFAdvancements.info("该物品可以直接使用该ID表示: \n" + id);
             }
             type = id;
         }
@@ -58,13 +58,13 @@ public class DumpItemCommand implements SubCommand {
                 representation.append("  - ").append(s.replace(ChatColor.COLOR_CHAR, '&')).append("\n");
             }
         }
-        SFAdvancements.info("If you only care about looks, you can represent the item with \n" + representation);
+        SFAdvancements.info("医生称 \n" + representation);
 
         YamlConfiguration configuration = new YamlConfiguration();
         configuration.set("item", item);
-        SFAdvancements.info("Full yml representation: \n" + configuration.saveToString());
+        SFAdvancements.info("物品的序列化配置: \n" + configuration.saveToString());
 
-        sender.sendMessage("Done! Check the console for details.");
+        sender.sendMessage("已完成! 请检查控制台.");
         return true;
     }
 
