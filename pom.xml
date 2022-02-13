@@ -9,7 +9,7 @@
     <version>MODIFIED</version>
     <packaging>jar</packaging>
 
-    <name>Slimefun Advancements</name>
+    <name>SlimefunAdvancements</name>
 
     <properties>
         <maven.compiler.source>1.8</maven.compiler.source>
