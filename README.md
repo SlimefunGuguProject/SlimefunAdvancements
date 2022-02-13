@@ -4,8 +4,6 @@
 
 ## 下载
 
-**自动更新**: 汉化版构建#1及以后版本包含自动更新功能，默认开启。
-
 点击这里下载 SlimefunAdvancements: [下载 SlimefunAdvancements](https://builds.guizhanss.net/ybw0014/SlimefunAdvancements-CN/main)
 
 <p align="center">
