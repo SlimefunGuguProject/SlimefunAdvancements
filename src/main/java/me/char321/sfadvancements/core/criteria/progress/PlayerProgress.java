@@ -54,7 +54,7 @@ public class PlayerProgress {
                 JsonObject object = JsonParser.parseReader(new BufferedReader(new InputStreamReader(new FileInputStream(f), StandardCharsets.UTF_8))).getAsJsonObject();
                 res.loadFromObject(object);
             } catch (IOException e) {
-                SFAdvancements.warn("Error reading progress file: " + e);
+                SFAdvancements.warn("无法获取进度: " + e);
             }
         }
         return res;
@@ -125,7 +125,7 @@ public class PlayerProgress {
         for (Map.Entry<String, JsonElement> entry : object.entrySet()) {
             NamespacedKey advkey = NamespacedKey.fromString(entry.getKey());
             if(!Utils.isValidAdvancement(advkey)) {
-                SFAdvancements.warn("unknown advancement: " + advkey);
+                SFAdvancements.warn("未知进度: " + advkey);
                 continue;
             }
             AdvancementProgress newprogress = new AdvancementProgress(advkey);
@@ -139,7 +139,7 @@ public class PlayerProgress {
         if (!f.exists()) {
             f.getParentFile().mkdirs();
             if (!f.createNewFile()) {
-                throw new IOException("Could not create file " + f.getPath());
+                throw new IOException("无法创建文件 " + f.getPath());
             }
         }
 

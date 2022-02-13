@@ -59,6 +59,10 @@
                             <pattern>org.bstats</pattern>
                             <shadedPattern>me.char321.sfadvancements.libs.bstats</shadedPattern>
                         </relocation>
+                        <relocation>
+                            <pattern>net.guizhanss.guizhanlib</pattern>
+                            <shadedPattern>me.char321.sfadvancements.libs.guizhanlib</shadedPattern>
+                        </relocation>
                     </relocations>
                     <filters>
                         <filter>
@@ -82,6 +86,9 @@
                 </executions>
             </plugin>
         </plugins>
+
+        <defaultGoal>clean package</defaultGoal>
+        <sourceDirectory>${basedir}/src/main/java</sourceDirectory>
         <resources>
             <resource>
                 <directory>src/main/resources</directory>
@@ -123,6 +130,13 @@
             <artifactId>junit-jupiter</artifactId>
             <version>5.8.2</version>
             <scope>test</scope>
+        </dependency>
+
+        <dependency>
+            <groupId>net.guizhanss</groupId>
+            <artifactId>GuizhanLib</artifactId>
+            <version>0.5.2</version>
+            <scope>compile</scope>
         </dependency>
     </dependencies>
 </project>

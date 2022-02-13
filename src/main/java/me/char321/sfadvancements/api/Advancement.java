@@ -86,7 +86,7 @@ public class Advancement {
      */
     public void complete(Player p) {
         BaseComponent component = new TextComponent();
-        component.addExtra(p.getName() + " has made the advancement ");
+        component.addExtra(p.getName() + "取得了进度");
         BaseComponent sub = new TextComponent(getName());
         sub.setHoverEvent(new HoverEvent(HoverEvent.Action.SHOW_TEXT, new Text(getDescription())));
         component.addExtra(sub);

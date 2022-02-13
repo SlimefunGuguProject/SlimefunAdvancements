@@ -1,4 +1,5 @@
+# 启用自动更新
 auto-update: true
 
-#use advancements api (experimental)
+# 使用进度 API (实验性功能)
 use-advancements-api: false
