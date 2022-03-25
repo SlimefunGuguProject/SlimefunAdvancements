@@ -93,7 +93,7 @@ public final class SFAdvancements extends JavaPlugin implements SlimefunAddon {
         try {
             advManager.save();
         } catch (IOException e) {
-            getLogger().log(Level.SEVERE, e, () -> "Could not save advancements");
+            getLogger().log(Level.SEVERE, e, () -> "无法保存进度");
         }
     }
 
