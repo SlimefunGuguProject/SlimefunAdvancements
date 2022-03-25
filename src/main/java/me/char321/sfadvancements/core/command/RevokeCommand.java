@@ -18,7 +18,7 @@ public class RevokeCommand implements SubCommand {
     @Override
     public boolean onExecute(CommandSender sender, Command command, String label, String[] args) {
         if (args.length < 3) {
-            sender.sendMessage(ChatColor.RED + "用法: /" + label + " <player> <advancement>");
+            sender.sendMessage(ChatColor.RED + "用法: /" + label + " revoke <player> <advancement>");
             return false;
         }
 
