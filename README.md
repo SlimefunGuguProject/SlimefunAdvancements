@@ -138,7 +138,7 @@ hi:
 - `inventory`
   - 物品栏中拥有物品
   - 需要在 `item` 中指定物品（参考 (物品设置)[#物品设置] 部分）
-  - 目前暂不支持设置数量，只要有一个物品就可以触发
+  - 可以在 `amount` 指定需要的数量
 - `multiblock`
   - 与粘液科技中的多方块结构交互
   - 需要在 `multiblock` 中指定多方块结构的 ID
@@ -152,6 +152,11 @@ hi:
   - 需要在 `research` 中指定研究的 NamespacedKey
     - NamespacedKey 的格式为 "插件:键名", 在 Slimefun 中的研究为 "slimefun:research"
       - 例如: "slimefun:ender_talismans"
+- `mobkill`
+  - 击杀指定的生物
+  - 需要在 `entity` 中指定生物类型
+  - 生物类型为`EntityType` (例如 `stray`, `cave_spider`, `glow_squid`, etc.)
+  - 可以通过 `amount` 指定击杀的数量
 
 #### 奖励
 
@@ -181,7 +186,7 @@ hi:
       - ~~放置~~
   - ~~完成研究~~
 - ~~配置~~
-- 奖励
+- ~~奖励~~
 - 添加成就
 - ~~权限~~
 - 从其他插件加载进度

@@ -15,6 +15,7 @@ import me.char321.sfadvancements.core.gui.AdvGUIManager;
 import me.char321.sfadvancements.core.registry.AdvancementsRegistry;
 import me.char321.sfadvancements.core.tasks.AutoSaveTask;
 import me.char321.sfadvancements.util.ConfigUtils;
+import me.char321.sfadvancements.util.Utils;
 import net.guizhanss.guizhanlib.updater.GuizhanBuildsUpdater;
 import org.bstats.bukkit.Metrics;
 import org.bukkit.Bukkit;
@@ -78,7 +79,7 @@ public final class SFAdvancements extends JavaPlugin implements SlimefunAddon {
 
         //allow other plugins to register their criteria completers
         info("等待服务器启动中...");
-        Bukkit.getScheduler().runTaskLater(this, () -> {
+        Utils.runLater(() -> {
             info("正在从配置文件中加载进度组...");
             loadGroups();
             info("正在从配置文件中加载进度...");
