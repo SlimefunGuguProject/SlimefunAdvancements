@@ -155,7 +155,7 @@ hi:
 - `mobkill`
   - 击杀指定的生物
   - 需要在 `entity` 中指定生物类型
-  - 生物类型为`EntityType` (例如 `stray`, `cave_spider`, `glow_squid`, etc.)
+  - 生物类型为`EntityType`小写加下划线的形式 (例如 `stray`, `cave_spider`, `glow_squid`, etc.)
   - 可以通过 `amount` 指定击杀的数量
 
 #### 奖励
