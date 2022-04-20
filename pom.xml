@@ -61,6 +61,10 @@
                             <pattern>net.guizhanss.guizhanlib</pattern>
                             <shadedPattern>me.char321.sfadvancements.libs.guizhanlib</shadedPattern>
                         </relocation>
+                        <relocation>
+                            <pattern>net.roxeez.advancement</pattern>
+                            <shadedPattern>me.char321.sfadvancements.libs.advancementapi</shadedPattern>
+                        </relocation>
                     </relocations>
                     <filters>
                         <filter>
@@ -151,6 +155,13 @@
         </dependency>
 
         <dependency>
+            <groupId>com.github.qwertyuioplkjhgfd</groupId>
+            <artifactId>AdvancementAPI</artifactId>
+            <version>3c5e4560a8</version>
+            <scope>compile</scope>
+        </dependency>
+
+        <dependency>
             <groupId>org.bstats</groupId>
             <artifactId>bstats-bukkit</artifactId>
             <version>2.2.1</version>
@@ -181,7 +192,7 @@
         <dependency>
             <groupId>net.guizhanss</groupId>
             <artifactId>GuizhanLib</artifactId>
-            <version>0.7.0</version>
+            <version>0.8.5</version>
             <scope>compile</scope>
         </dependency>
     </dependencies>
