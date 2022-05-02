@@ -1,5 +1,5 @@
 # 启用自动更新
 auto-update: true
 
-# 使用进度 API (实验性功能)
-use-advancements-api: false
+# 使用原版MC的进度 API (实验性功能)
+use-advancements-api: true
