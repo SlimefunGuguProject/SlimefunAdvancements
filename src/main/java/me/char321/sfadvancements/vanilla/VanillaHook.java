@@ -130,7 +130,7 @@ public class VanillaHook {
     public void complete(Player p, NamespacedKey key) {
         org.bukkit.advancement.Advancement advancement = Bukkit.getAdvancement(key);
         if (advancement == null) {
-            SFAdvancements.warn("Tried to complete unregistered advancement " + key);
+            SFAdvancements.warn("尝试完成未注册的成就 " + key);
             return;
         }
         Utils.runSync(() -> p.getAdvancementProgress(advancement).awardCriteria("impossible"));
@@ -139,7 +139,7 @@ public class VanillaHook {
     public void revoke(Player p, NamespacedKey key) {
         org.bukkit.advancement.Advancement advancement = Bukkit.getAdvancement(key);
         if (advancement == null) {
-            SFAdvancements.warn("Tried to revoke unregistered advancement " + key);
+            SFAdvancements.warn("尝试撤销未注册的成就 " + key);
             return;
         }
         Utils.runSync(() -> p.getAdvancementProgress(advancement).revokeCriteria("impossible"));

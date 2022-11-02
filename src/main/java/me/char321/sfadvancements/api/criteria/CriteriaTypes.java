@@ -44,13 +44,13 @@ public class CriteriaTypes {
     public static Criterion loadFromConfig(String id, ConfigurationSection config) {
         String type = config.getString("type");
         if (type == null) {
-            SFAdvancements.warn("You must specify a type for criterion " + id + " in advancements.yml");
+            SFAdvancements.warn("你必须在advancements.yml为 " + id + " 指定类型");
             return null;
         }
 
         Function<ConfigurationSection, Criterion> function = SFAdvancements.getRegistry().getCriterionTypes().get(type);
         if(function == null) {
-            SFAdvancements.warn("unknown criterion type: " + type);
+            SFAdvancements.warn("未知的成就类型: " + type);
             return null;
         }
 
