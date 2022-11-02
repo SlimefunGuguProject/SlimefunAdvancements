@@ -2,7 +2,6 @@ package me.char321.sfadvancements;
 
 import io.github.thebusybiscuit.slimefun4.api.SlimefunAddon;
 import io.github.thebusybiscuit.slimefun4.libraries.dough.config.Config;
-import io.github.thebusybiscuit.slimefun4.libraries.dough.updater.GitHubBuildsUpdater;
 import me.char321.sfadvancements.api.AdvancementBuilder;
 import me.char321.sfadvancements.api.AdvancementGroup;
 import me.char321.sfadvancements.api.criteria.CriteriaTypes;
@@ -17,7 +16,7 @@ import me.char321.sfadvancements.core.tasks.AutoSaveTask;
 import me.char321.sfadvancements.util.ConfigUtils;
 import me.char321.sfadvancements.util.Utils;
 import me.char321.sfadvancements.vanilla.VanillaHook;
-import net.guizhanss.guizhanlib.updater.GuizhanBuildsUpdater;
+import net.guizhanss.guizhanlibplugin.updater.GuizhanBuildsUpdaterWrapper;
 import org.bstats.bukkit.Metrics;
 import org.bstats.charts.SimplePie;
 import org.bukkit.Bukkit;
@@ -111,9 +110,9 @@ public final class SFAdvancements extends JavaPlugin implements SlimefunAddon {
     }
 
     private void autoUpdate() {
-        if (config.getBoolean("auto-update") && getDescription().getVersion().startsWith("Build ")) {
+        if (config.getBoolean("auto-update") && getDescription().getVersion().startsWith("Build")) {
             info("正在检查更新...");
-            new GuizhanBuildsUpdater(this, this.getFile(), "ybw0014", "SlimefunAdvancements-CN", "main", false).start();
+            GuizhanBuildsUpdaterWrapper.start(this, this.getFile(), "ybw0014", "SlimefunAdvancements-CN", "main", false);
         }
     }
 
