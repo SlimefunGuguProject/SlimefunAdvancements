@@ -175,13 +175,13 @@ who_asked:
   group: other
   display:
     type: MAP
-    name: "&aWho Asked?"
+    name: "&a谁问了问题?"
     lore:
-      - "Search for who asked"
-  name: "&a[Who Asked?]"
+      - "搜索 who asked"
+  name: "&a[谁问了问题?]"
   criteria:
     ask:
-      name: "Search for who asked"
+      name: "搜索 who asked"
       type: search
       search: "who asked"
   hidden: true

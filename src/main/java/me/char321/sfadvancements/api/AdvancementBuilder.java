@@ -33,7 +33,7 @@ public class AdvancementBuilder {
         String groupName = config.getString("group");
         AdvancementGroup group = getGroup(groupName);
         if (group == null) {
-            SFAdvancements.warn("unknown group " + groupName + " for advancement " + key);
+            SFAdvancements.warn(key + "进度的进度组 " + groupName + " 不存在!");
             return null;
         }
         builder.group(group);
@@ -47,7 +47,7 @@ public class AdvancementBuilder {
 
         ItemStack display = ConfigUtils.getItem(config, "display");
         if (display == null) {
-            SFAdvancements.warn("invalid display for advancement " + key);
+            SFAdvancements.warn("进度 " + key + " 的展示物品无效");
             return null;
         }
         builder.display(display);
@@ -62,7 +62,7 @@ public class AdvancementBuilder {
 
         ConfigurationSection cripath = config.getConfigurationSection("criteria");
         if (cripath == null) {
-            SFAdvancements.warn("criteria must be specified for advancement " + key);
+            SFAdvancements.warn("进度 " + key + " 必须指定完成条件");
             return null;
         }
         List<Criterion> criteria = new ArrayList<>();
