@@ -58,10 +58,6 @@
                             <shadedPattern>me.char321.sfadvancements.libs.bstats</shadedPattern>
                         </relocation>
                         <relocation>
-                            <pattern>net.guizhanss.guizhanlib</pattern>
-                            <shadedPattern>me.char321.sfadvancements.libs.guizhanlib</shadedPattern>
-                        </relocation>
-                        <relocation>
                             <pattern>net.roxeez.advancement</pattern>
                             <shadedPattern>me.char321.sfadvancements.libs.advancementapi</shadedPattern>
                         </relocation>
