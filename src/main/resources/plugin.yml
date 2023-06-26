@@ -2,7 +2,8 @@ name: SlimefunAdvancements
 version: '${project.version}'
 main: me.char321.sfadvancements.SFAdvancements
 api-version: 1.14
-depend: [ Slimefun, GuizhanLibPlugin ]
+depend: [ Slimefun ]
+softdepend: [ GuizhanLibPlugin ]
 authors: [ char321 ]
 
 commands:

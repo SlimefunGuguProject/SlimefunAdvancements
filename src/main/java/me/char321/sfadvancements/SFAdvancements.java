@@ -16,7 +16,7 @@ import me.char321.sfadvancements.core.tasks.AutoSaveTask;
 import me.char321.sfadvancements.util.ConfigUtils;
 import me.char321.sfadvancements.util.Utils;
 import me.char321.sfadvancements.vanilla.VanillaHook;
-import net.guizhanss.guizhanlibplugin.updater.GuizhanBuildsUpdaterWrapper;
+import net.guizhanss.guizhanlibplugin.updater.GuizhanUpdater;
 import org.bstats.bukkit.Metrics;
 import org.bstats.charts.SimplePie;
 import org.bukkit.Bukkit;
@@ -59,6 +59,13 @@ public final class SFAdvancements extends JavaPlugin implements SlimefunAddon {
     @Override
     public void onEnable() {
         instance = this;
+
+        if (!getServer().getPluginManager().isPluginEnabled("GuizhanLibPlugin")) {
+            getLogger().log(Level.SEVERE, "本插件需要 鬼斩前置库插件(GuizhanLibPlugin) 才能运行!");
+            getLogger().log(Level.SEVERE, "从此处下载: https://50l.cc/gzlib");
+            getServer().getPluginManager().disablePlugin(this);
+            return;
+        }
 
         config = new Config(this);
 
@@ -112,7 +119,7 @@ public final class SFAdvancements extends JavaPlugin implements SlimefunAddon {
     private void autoUpdate() {
         if (config.getBoolean("auto-update") && getDescription().getVersion().startsWith("Build")) {
             info("正在检查更新...");
-            GuizhanBuildsUpdaterWrapper.start(this, this.getFile(), "ybw0014", "SlimefunAdvancements-CN", "main", false);
+            GuizhanUpdater.start(this, this.getFile(), "ybw0014", "SlimefunAdvancements-CN", "main");
         }
     }
 
