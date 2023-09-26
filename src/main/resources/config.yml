@@ -1,5 +1,8 @@
 # 启用自动更新
 auto-update: true
 
-# 使用原版MC的进度 API (实验性功能)
+# 将自定义进度添加到原版进度菜单中 (实验性功能)
 use-advancements-api: true
+
+# 在聊天栏中展示进度达成消息
+announce-advancements: true
