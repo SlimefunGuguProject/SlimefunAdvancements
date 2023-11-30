@@ -76,7 +76,7 @@ public final class SFAdvancements extends JavaPlugin implements SlimefunAddon {
         Bukkit.getPluginManager().registerEvents(guiManager, this);
 
         // init sf
-        new AdvancementsItemGroup().register(this);
+        AdvancementsItemGroup.init(this);
 
         // init core
         DefaultCompleters.registerDefaultCompleters();

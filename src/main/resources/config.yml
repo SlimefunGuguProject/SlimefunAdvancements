@@ -6,3 +6,6 @@ use-advancements-api: true
 
 # 在聊天栏中展示进度达成消息
 announce-advancements: true
+
+# 是否将粘液科技进度的按钮添加到粘液科技的指南中
+add-advancements-to-guide: true
