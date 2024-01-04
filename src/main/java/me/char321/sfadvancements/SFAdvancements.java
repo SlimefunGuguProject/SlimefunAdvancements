@@ -45,6 +45,7 @@ public final class SFAdvancements extends JavaPlugin implements SlimefunAddon {
     private YamlConfiguration groupConfig;
 
     private boolean testing = false;
+    private boolean multiBlockCraftEvent = false;
 
     public SFAdvancements() {
 
@@ -67,6 +68,8 @@ public final class SFAdvancements extends JavaPlugin implements SlimefunAddon {
         }
 
         config = new Config(this);
+
+        detectCapabilities();
 
         autoUpdate();
 
@@ -112,6 +115,15 @@ public final class SFAdvancements extends JavaPlugin implements SlimefunAddon {
             advManager.save();
         } catch (IOException e) {
             getLogger().log(Level.SEVERE, e, () -> "无法保存进度");
+        }
+    }
+
+    private void detectCapabilities() {
+        try {
+            Class.forName("io.github.thebusybiscuit.slimefun4.api.events.MultiBlockCraftEvent");
+            multiBlockCraftEvent = true;
+        } catch (ClassNotFoundException e) {
+            multiBlockCraftEvent = false;
         }
     }
 
@@ -211,6 +223,10 @@ public final class SFAdvancements extends JavaPlugin implements SlimefunAddon {
 
     public boolean isTesting() {
         return testing;
+    }
+
+    public boolean isMultiBlockCraftEvent() {
+        return multiBlockCraftEvent;
     }
 
     public static Logger logger() {

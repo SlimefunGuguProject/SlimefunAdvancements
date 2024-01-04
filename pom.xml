@@ -5,7 +5,7 @@
     <modelVersion>4.0.0</modelVersion>
 
     <groupId>me.char321</groupId>
-    <artifactId>SlimefunAdvancements</artifactId>
+    <artifactId>sfadvancements</artifactId>
     <version>MODIFIED</version>
     <packaging>jar</packaging>
 
@@ -35,7 +35,9 @@
     </repositories>
 
     <build>
-        <finalName>${project.name}-${project.version}</finalName>
+        <defaultGoal>clean package</defaultGoal>
+        <finalName>${project.artifactId}</finalName>
+
         <plugins>
             <plugin>
                 <groupId>org.apache.maven.plugins</groupId>
@@ -118,9 +120,6 @@
                 </configuration>
             </plugin>
         </plugins>
-
-        <defaultGoal>clean package</defaultGoal>
-        <sourceDirectory>${basedir}/src/main/java</sourceDirectory>
         <resources>
             <resource>
                 <directory>src/main/resources</directory>
@@ -140,7 +139,7 @@
         <dependency>
             <groupId>com.github.Slimefun</groupId>
             <artifactId>Slimefun4</artifactId>
-            <version>RC-30</version>
+            <version>RC-36</version>
             <scope>provided</scope>
             <exclusions>
                 <exclusion>
@@ -188,7 +187,7 @@
         <dependency>
             <groupId>net.guizhanss</groupId>
             <artifactId>GuizhanLibPlugin</artifactId>
-            <version>1.2.2</version>
+            <version>1.6.1</version>
             <scope>provided</scope>
         </dependency>
     </dependencies>
