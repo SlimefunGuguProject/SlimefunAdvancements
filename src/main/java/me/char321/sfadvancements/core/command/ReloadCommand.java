@@ -16,13 +16,13 @@ import java.util.logging.Level;
 public class ReloadCommand implements SubCommand {
     @Override
     public boolean onExecute(CommandSender sender, Command command, String label, String[] args) {
-        SFAdvancements.info("Reloading advancements");
-        sender.sendMessage(ChatColor.YELLOW + "Reloading is an experimental feature. If there are any bugs, restart the server.");
+        SFAdvancements.info("正在重载配置...");
+        sender.sendMessage(ChatColor.YELLOW + "重载配置是一个实验性功能。如果你遇到了任何问题，请重启服务器。");
         try {
             SFAdvancements.getAdvManager().save();
         } catch (IOException e) {
-            sender.sendMessage(ChatColor.RED + "Error while saving advancements! Check the console for details. Reload cancelled.");
-            SFAdvancements.logger().log(Level.SEVERE, e, () -> "Could not save advancements while reloading");
+            sender.sendMessage(ChatColor.RED + "保存进度时出现错误，检查控制台获得更多信息。重载已中止。");
+            SFAdvancements.logger().log(Level.SEVERE, e, () -> "重载保存进度时出现错误");
             return false;
         }
 
@@ -34,7 +34,7 @@ public class ReloadCommand implements SubCommand {
 
         SFAdvancements.instance().reload();
 
-        sender.sendMessage("Successfully reloaded!");
+        sender.sendMessage("已成功重载配置！");
         return true;
     }
 

@@ -26,35 +26,35 @@ public class ImportCommand implements SubCommand {
     @Override
     public boolean onExecute(CommandSender sender, Command command, String label, String[] args) {
         if (args.length < 2) {
-            sender.sendMessage(ChatColor.RED + "Usage: /" + label + " import <plugin>");
+            sender.sendMessage(ChatColor.RED + "用法： /" + label + " import <插件名>");
             return false;
         }
 
         Plugin pl = Bukkit.getPluginManager().getPlugin(args[1]);
         if (pl == null) {
-            sender.sendMessage(ChatColor.RED + "Plugin " + args[1] + " not found.");
+            sender.sendMessage(ChatColor.RED + "插件 " + args[1] + " 未找到。");
             return false;
         }
 
-        sender.sendMessage("Importing advancements from " + pl.getName());
+        sender.sendMessage("正在导入插件 " + pl.getName() + " 中的进度设置...");
 
         InputStream advInputStream = pl.getResource("sfadvancements.yml");
         if (advInputStream == null) {
-            sender.sendMessage(ChatColor.RED + "Plugin " + pl.getName() + " does not have default advancements.");
+            sender.sendMessage(ChatColor.RED + "插件 " + pl.getName() + " 的jar中没有默认的进度配置文件 sfadvancements.yml");
             return false;
         }
 
         InputStream groupInputStream = pl.getResource("sfagroups.yml");
         if (groupInputStream == null) {
-            sender.sendMessage(ChatColor.YELLOW + "Plugin " + pl.getName() + " does not specify default groups.");
-            sender.sendMessage(ChatColor.YELLOW + "Any imported advancements may have unknown groups.");
+            sender.sendMessage(ChatColor.YELLOW + "插件 " + pl.getName() + " 的jar中没有默认的进度组配置文件 sfagroups.yml");
+            sender.sendMessage(ChatColor.YELLOW + "任何导入的进度都将被放置在默认组中。");
         }
 
         saveBackups();
         importGroups(pl, groupInputStream);
         importAdvancements(pl, advInputStream);
 
-        sender.sendMessage("Done! Restart the server or use /sfa reload to apply the changes.");
+        sender.sendMessage("已完成！重启服务器或使用 /sfa reload 指令来让改动生效。");
         return true;
     }
 
@@ -65,7 +65,7 @@ public class ImportCommand implements SubCommand {
             backupFolder.mkdirs();
         }
         if (!backupFolder.isDirectory()) {
-            throw new IllegalStateException("File " + backupFolder + " is not a directory");
+            throw new IllegalStateException(backupFolder + " 不是有效的目录。");
         }
 
         File groupFile = new File(dataFolder, "groups.yml");
@@ -89,7 +89,7 @@ public class ImportCommand implements SubCommand {
                 Files.copy(advFile.toPath(), advFileOut.toPath());
             }
         } catch (IOException ex) {
-            SFAdvancements.logger().log(Level.SEVERE, ex, () -> "Error while saving advancement backups");
+            SFAdvancements.logger().log(Level.SEVERE, ex, () -> "创建备份时出现错误");
         }
     }
 
@@ -106,7 +106,7 @@ public class ImportCommand implements SubCommand {
         Set<String> keys = config.getKeys(false);
         for (String key : keys) {
             if (original.isSet(key)) {
-                SFAdvancements.info("group key " + key + " already exists in original; not replacing");
+                SFAdvancements.info("进度组 " + key + " 已存在，不会进行覆盖。");
             } else {
                 original.set(key, config.get(key));
             }
@@ -114,7 +114,7 @@ public class ImportCommand implements SubCommand {
         try {
             original.save(outfile);
         } catch (IOException ex) {
-            SFAdvancements.logger().log(Level.SEVERE, ex, () -> "Could not save groups");
+            SFAdvancements.logger().log(Level.SEVERE, ex, () -> "无法保存进度组");
         }
     }
 
@@ -127,7 +127,7 @@ public class ImportCommand implements SubCommand {
         Set<String> keys = config.getKeys(false);
         for (String key : keys) {
             if (original.isSet(key)) {
-                SFAdvancements.info("advancement key " + key + " already exists in original; not replacing");
+                SFAdvancements.info("进度 " + key + " 已存在，不会进行覆盖。");
             } else {
                 original.set(key, config.get(key));
             }
@@ -135,7 +135,7 @@ public class ImportCommand implements SubCommand {
         try {
             original.save(outfile);
         } catch (IOException ex) {
-            SFAdvancements.logger().log(Level.SEVERE, ex, () -> "Could not save advancements");
+            SFAdvancements.logger().log(Level.SEVERE, ex, () -> "无法保存进度");
         }
     }
 

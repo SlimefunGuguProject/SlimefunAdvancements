@@ -58,13 +58,13 @@ public class DumpItemCommand implements SubCommand {
                 representation.append("  - ").append(s.replace(ChatColor.COLOR_CHAR, '&')).append("\n");
             }
         }
-        SFAdvancements.info("医生称 \n" + representation);
+        SFAdvancements.info("已生成 \n" + representation);
 
         YamlConfiguration configuration = new YamlConfiguration();
         configuration.set("item", item);
         SFAdvancements.info("物品的序列化配置: \n" + configuration.saveToString());
 
-        sender.sendMessage("已完成! 请检查控制台.");
+        sender.sendMessage("已完成！请检查控制台。");
         return true;
     }
 

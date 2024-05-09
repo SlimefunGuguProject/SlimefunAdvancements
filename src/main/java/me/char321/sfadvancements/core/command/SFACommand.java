@@ -32,12 +32,12 @@ public class SFACommand implements CommandExecutor {
                     if (sender.hasPermission("sfa.command."+subcmd.getCommandName())) {
                         return subcmd.onExecute(sender, command, label, args);
                     } else {
-                        sender.sendMessage("你没有权限.");
+                        sender.sendMessage("你没有权限。");
                         return false;
                     }
                 }
             }
-            sender.sendMessage("未知指令! 可用指令: " + subcommands.stream().map(SubCommand::getCommandName).collect(Collectors.joining(", ")));
+            sender.sendMessage("未知指令! 可用指令：" + subcommands.stream().map(SubCommand::getCommandName).collect(Collectors.joining(", ")));
             return false;
         }
         sender.sendMessage("SlimefunAdvancements 粘液进度 版本 " + SFAdvancements.instance().getDescription().getVersion());

@@ -18,7 +18,7 @@ public class GrantCommand implements SubCommand {
     @Override
     public boolean onExecute(CommandSender sender, Command command, String label, String[] args) {
         if (args.length < 3) {
-            sender.sendMessage(ChatColor.RED + "用法: /" + label + " grant <player> <advancement>");
+            sender.sendMessage(ChatColor.RED + "用法: /" + label + " grant <玩家> <进度>");
             return false;
         }
 
@@ -32,7 +32,7 @@ public class GrantCommand implements SubCommand {
             for (Advancement adv : SFAdvancements.getRegistry().getAdvancements().values()) {
                 adv.complete(p);
             }
-            sender.sendMessage("已为玩家解锁所有进度!");
+            sender.sendMessage("已为玩家解锁所有进度！");
             return true;
         }
 
