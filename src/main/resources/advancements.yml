@@ -5,6 +5,7 @@ portable_workbench:
     name: "&a便携合成"
     lore:
       - "使用一次便携工作台"
+  frame_type: GOAL
   name: "&a[便携合成]"
   criteria:
     interact:
@@ -24,6 +25,7 @@ dust:
     name: "&a变成粉末"
     lore:
       - "使用一次矿石粉碎机"
+  frame_type: TASK
   name: "&a[变成粉末]"
   criteria:
     inventory:
@@ -136,6 +138,7 @@ carbonado:
     name: "&a闪耀的黑色钻石"
     lore:
       - "获得一块黑金刚石"
+  frame_type: CHALLENGER
   name: "&a[闪耀的黑色钻石]"
   criteria:
     carbonado:
