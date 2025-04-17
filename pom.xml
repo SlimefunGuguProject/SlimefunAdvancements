@@ -12,8 +12,8 @@
     <name>SlimefunAdvancements</name>
 
     <properties>
-        <maven.compiler.source>1.8</maven.compiler.source>
-        <maven.compiler.target>1.8</maven.compiler.target>
+        <maven.compiler.source>16</maven.compiler.source>
+        <maven.compiler.target>16</maven.compiler.target>
         <project.build.sourceEncoding>UTF-8</project.build.sourceEncoding>
     </properties>
 
@@ -51,7 +51,7 @@
             <plugin>
                 <groupId>org.apache.maven.plugins</groupId>
                 <artifactId>maven-shade-plugin</artifactId>
-                <version>3.2.4</version>
+                <version>3.5.1</version>
                 <configuration>
                     <minimizeJar>true</minimizeJar>
                     <relocations>
@@ -150,9 +150,9 @@
         </dependency>
 
         <dependency>
-            <groupId>com.github.qwertyuioplkjhgfd</groupId>
+            <groupId>com.github.slimefunguguproject</groupId>
             <artifactId>AdvancementAPI</artifactId>
-            <version>f243bdaf75</version>
+            <version>3a2ece1ace</version>
             <scope>compile</scope>
         </dependency>
 
