@@ -25,14 +25,14 @@ public class Utils {
         item = item.clone();
         ItemMeta im = item.getItemMeta();
         //noinspection DataFlowIssue
-        im.addEnchant(Enchantment.DURABILITY, 1, false);
+        im.addEnchant(Enchantment.UNBREAKING, 1, false);
         im.addItemFlags(ItemFlag.HIDE_ENCHANTS);
         item.setItemMeta(im);
         return item;
     }
 
     public static void makeShiny(ItemMeta im) {
-        im.addEnchant(Enchantment.DURABILITY, 1, false);
+        im.addEnchant(Enchantment.UNBREAKING, 1, false);
         im.addItemFlags(ItemFlag.HIDE_ENCHANTS);
     }
 
