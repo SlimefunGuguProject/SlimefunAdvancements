@@ -37,6 +37,7 @@ import java.util.Set;
 public class VanillaHook {
     private boolean initialized = false;
     private final Set<NamespacedKey> loadedKeys = new HashSet<>();
+    private BackgroundStyle backgroundStyle = BackgroundStyle.RESOURCE_LOCATION;
 
     public void init() {
         if (initialized) return;
@@ -103,7 +104,7 @@ public class VanillaHook {
             List<String> lore = meta != null && meta.getLore() != null ? meta.getLore() : new ArrayList<>();
             String description = String.join("\n", lore);
             String rawBackground = group.getBackground();
-            String resolvedBackground = resolveBackground(rawBackground);
+            String resolvedBackground = resolveBackground(rawBackground, backgroundStyle);
             JsonObject json = buildAdvancementJson(
                 null,
                 item,
@@ -199,6 +200,7 @@ public class VanillaHook {
             return;
         }
         String background = readBackgroundFromAdvancement(adv);
+        backgroundStyle = detectBackgroundStyle(background);
         SFAdvancements.info("原版进度背景: " + key + " -> " + background);
     }
 
@@ -311,15 +313,23 @@ public class VanillaHook {
         return item;
     }
 
-    private static String resolveBackground(@Nullable String background) {
+    private static String resolveBackground(@Nullable String background, BackgroundStyle style) {
         if (background == null || background.trim().isEmpty()) {
-            return "block/slime_block";
+            return style == BackgroundStyle.TEXTURES_PATH
+                ? "minecraft:textures/block/slime_block.png"
+                : "block/slime_block";
         }
 
         String raw = background.trim().replace('\\', '/');
-        String namespace = null;
-        String path = raw;
+        if (style == BackgroundStyle.TEXTURES_PATH) {
+            return normalizeToTexturesPath(raw);
+        }
+        return normalizeToResourceLocation(raw);
+    }
 
+    private static String normalizeToTexturesPath(String raw) {
+        String namespace = "minecraft";
+        String path = raw;
         if (raw.contains(":")) {
             NamespacedKey key = NamespacedKey.fromString(raw);
             if (key != null) {
@@ -327,13 +337,30 @@ public class VanillaHook {
                 path = key.getKey();
             }
         }
-
-        path = normalizeBackgroundPath(path);
-        String resolved = path.toLowerCase(Locale.ROOT);
-        return namespace == null ? resolved : namespace + ":" + resolved;
+        String normalized = path.replace('\\', '/').toLowerCase(Locale.ROOT);
+        if (normalized.startsWith("textures/")) {
+            normalized = normalized.substring("textures/".length());
+        }
+        if (!normalized.contains("/")) {
+            normalized = "block/" + normalized;
+        }
+        String fullPath = "textures/" + normalized;
+        if (!fullPath.endsWith(".png")) {
+            fullPath = fullPath + ".png";
+        }
+        return namespace + ":" + fullPath;
     }
 
-    private static String normalizeBackgroundPath(String path) {
+    private static String normalizeToResourceLocation(String raw) {
+        String namespace = null;
+        String path = raw;
+        if (raw.contains(":")) {
+            NamespacedKey key = NamespacedKey.fromString(raw);
+            if (key != null) {
+                namespace = key.getNamespace();
+                path = key.getKey();
+            }
+        }
         String normalized = path.replace('\\', '/').toLowerCase(Locale.ROOT);
         if (normalized.startsWith("textures/")) {
             normalized = normalized.substring("textures/".length());
@@ -344,7 +371,23 @@ public class VanillaHook {
         if (!normalized.contains("/")) {
             normalized = "block/" + normalized;
         }
-        return normalized;
+        return namespace == null ? normalized : namespace + ":" + normalized;
+    }
+
+    private static BackgroundStyle detectBackgroundStyle(@Nullable String background) {
+        if (background == null) {
+            return BackgroundStyle.RESOURCE_LOCATION;
+        }
+        String value = background.toLowerCase(Locale.ROOT);
+        if (value.contains("resourcetexture") || value.contains("texturepath=")) {
+            return BackgroundStyle.RESOURCE_LOCATION;
+        }
+        return value.contains("textures/") ? BackgroundStyle.TEXTURES_PATH : BackgroundStyle.RESOURCE_LOCATION;
+    }
+
+    private enum BackgroundStyle {
+        TEXTURES_PATH,
+        RESOURCE_LOCATION
     }
 
     private static JsonObject buildIconComponents(ItemStack item) {
