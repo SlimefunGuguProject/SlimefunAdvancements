@@ -4,7 +4,6 @@ basic:
     name: "&f基础"
     lore:
       - "&7&o粘液科技的核心玩法"
-  background: slime_block.png
 
 electric:
   display:
@@ -12,7 +11,6 @@ electric:
     name: "&e电力"
     lore:
       - "&7&o文明的中心"
-  background: slime_block.png
 
 cargo:
   display:
@@ -20,7 +18,6 @@ cargo:
     name: "&6货运"
     lore:
       - "&7&o奇观的一小步"
-  background: slime_block.png
 
 technical:
   display:
@@ -28,7 +25,6 @@ technical:
     name: "&4科技"
     lore:
       - "&7&o旋转马达，起飞!"
-  background: slime_block.png
 
 magical:
   display:
@@ -36,7 +32,6 @@ magical:
     name: "&d魔法"
     lore:
       - "&7&o魔法是时间的产物"
-  background: slime_block.png
 
 other:
   display:
@@ -44,4 +39,3 @@ other:
     name: "&7其他"
     lore:
       - "&7&o其他进度"
-  background: slime_block.png

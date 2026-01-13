@@ -16,6 +16,7 @@ import me.char321.sfadvancements.core.tasks.AutoSaveTask;
 import me.char321.sfadvancements.util.ConfigUtils;
 import me.char321.sfadvancements.util.Utils;
 import me.char321.sfadvancements.vanilla.VanillaHook;
+import net.guizhanss.minecraft.guizhanlib.updater.GuizhanUpdater;
 import org.bstats.bukkit.Metrics;
 import org.bstats.charts.SimplePie;
 import org.bukkit.Bukkit;
@@ -120,13 +121,7 @@ public final class SFAdvancements extends JavaPlugin implements SlimefunAddon {
     private void autoUpdate() {
         if (config.getBoolean("auto-update") && getDescription().getVersion().startsWith("Build")) {
             info("正在检查更新...");
-            try {
-                Class<?> updater = Class.forName("net.guizhanss.guizhanlibplugin.updater.GuizhanUpdater");
-                Method start = updater.getMethod("start", JavaPlugin.class, File.class, String.class, String.class, String.class);
-                start.invoke(null, this, this.getFile(), "SlimefunGuguProject", "SlimefunAdvancements", "main");
-            } catch (Exception e) {
-                warn("自动更新初始化失败: " + e.getMessage());
-            }
+            GuizhanUpdater.start(this, this.getFile(), "SlimefunGuguProject", "SlimefunAdvancements", "main");
         }
     }
 
@@ -152,10 +147,7 @@ public final class SFAdvancements extends JavaPlugin implements SlimefunAddon {
         }
         groupConfig = YamlConfiguration.loadConfiguration(groupFile);
         for (String key : groupConfig.getKeys(false)) {
-            String background = groupConfig.getString(key + ".background");
-            if (background == null) {
-                background = "slime_block.png";
-            }
+            String background = groupConfig.getString(key + ".background", "slime_block.png");
             ItemStack display = ConfigUtils.getItem(groupConfig, key + ".display");
             String frameType = groupConfig.getString(key + ".frame_type", "GOAL");
             AdvancementGroup group = new AdvancementGroup(key, display, frameType, background);

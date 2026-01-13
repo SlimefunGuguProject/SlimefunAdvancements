@@ -6,12 +6,12 @@ import net.md_5.bungee.api.chat.TranslatableComponent;
 import org.bukkit.Bukkit;
 import org.bukkit.Material;
 import org.bukkit.NamespacedKey;
-import org.bukkit.enchantments.Enchantment;
 import org.bukkit.event.Listener;
 import org.bukkit.inventory.Inventory;
 import org.bukkit.inventory.ItemFlag;
 import org.bukkit.inventory.ItemStack;
 import org.bukkit.inventory.meta.ItemMeta;
+import net.guizhanss.guizhanlib.minecraft.utils.compatibility.EnchantmentX;
 
 import java.util.HashMap;
 import java.util.Locale;
@@ -25,14 +25,14 @@ public class Utils {
         item = item.clone();
         ItemMeta im = item.getItemMeta();
         //noinspection DataFlowIssue
-        im.addEnchant(Enchantment.UNBREAKING, 1, false);
+        im.addEnchant(EnchantmentX.UNBREAKING, 1, false);
         im.addItemFlags(ItemFlag.HIDE_ENCHANTS);
         item.setItemMeta(im);
         return item;
     }
 
     public static void makeShiny(ItemMeta im) {
-        im.addEnchant(Enchantment.UNBREAKING, 1, false);
+        im.addEnchant(EnchantmentX.UNBREAKING, 1, false);
         im.addItemFlags(ItemFlag.HIDE_ENCHANTS);
     }
 
