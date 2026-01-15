@@ -279,7 +279,8 @@ public class VanillaHook {
         display.add("icon", buildIcon(item));
         display.addProperty("frame", normalizeFrame(frameType));
         display.addProperty("announce_to_chat", false);
-        display.addProperty("show_toast", showToast);
+        boolean showToastValue = showToast && !hidden;
+        display.addProperty("show_toast", showToastValue);
         display.addProperty("hidden", hidden);
         if (background != null && !background.isBlank()) {
             display.addProperty("background", background);

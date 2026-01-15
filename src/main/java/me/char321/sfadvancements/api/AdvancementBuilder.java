@@ -65,7 +65,11 @@ public class AdvancementBuilder {
         }
         builder.name(advname);
 
-        builder.hidden(config.getBoolean("hidden"));
+        boolean hidden = config.getBoolean("hidden");
+        if (!hidden) {
+            hidden = config.getBoolean("display.hidden");
+        }
+        builder.hidden(hidden);
 
         ConfigurationSection cripath = config.getConfigurationSection("criteria");
         if (cripath == null) {
