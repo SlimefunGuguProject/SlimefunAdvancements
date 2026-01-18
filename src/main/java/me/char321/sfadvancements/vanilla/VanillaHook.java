@@ -33,10 +33,12 @@ import java.util.List;
 import java.util.Locale;
 import java.util.Map;
 import java.util.Set;
+import java.util.concurrent.ConcurrentHashMap;
 
+// Must be accessed from the main server thread only.
 public class VanillaHook {
     private boolean initialized = false;
-    private final Set<NamespacedKey> loadedKeys = new HashSet<>();
+    private final Set<NamespacedKey> loadedKeys = ConcurrentHashMap.newKeySet();
     private BackgroundStyle backgroundStyle = BackgroundStyle.RESOURCE_LOCATION;
 
     public void init() {
@@ -88,7 +90,7 @@ public class VanillaHook {
                 SFAdvancements.warn("无法移除进度 " + key + ": " + e.getMessage());
             }
         }
-        if (removedAny) {
+        if (removedAny && SFAdvancements.getMainConfig().getBoolean("reload-data-on-adv-remove", true)) {
             Bukkit.reloadData();
         }
     }
@@ -115,9 +117,7 @@ public class VanillaHook {
                 resolvedBackground,
                 false
             );
-            SFAdvancements.info("进度组背景: " + group.getId() + " -> " + resolvedBackground);
-            SFAdvancements.info("背景解析: raw=" + rawBackground + ", resolved=" + resolvedBackground);
-            SFAdvancements.info("进度组JSON: " + key + " -> " + json);
+            logGroupDebug(group.getId(), rawBackground, resolvedBackground, key, json);
             loadAdvancement(key, json);
             logResolvedBackgroundFromServer(key);
         }
@@ -157,6 +157,15 @@ public class VanillaHook {
             true
         );
         loadAdvancement(advancement.getKey(), json);
+    }
+
+    private void logGroupDebug(String groupId, String rawBackground, String resolvedBackground, NamespacedKey key, JsonObject json) {
+        if (!SFAdvancements.getMainConfig().getBoolean("debug")) {
+            return;
+        }
+        SFAdvancements.info("进度组背景: " + groupId + " -> " + resolvedBackground);
+        SFAdvancements.info("背景解析: raw=" + rawBackground + ", resolved=" + resolvedBackground);
+        SFAdvancements.info("进度组JSON: " + key + " -> " + json);
     }
 
     private static String getDescriptionFor(List<String> lore, Advancement adv) {
@@ -234,6 +243,7 @@ public class VanillaHook {
             Object background = unwrapOptional(backgroundOpt);
             return background == null ? null : background.toString();
         } catch (Exception e) {
+            logDebugException("read-background", e);
             return null;
         }
     }
@@ -244,7 +254,10 @@ public class VanillaHook {
             try {
                 Method method = target.getClass().getMethod(name);
                 return method.invoke(target);
+            } catch (NoSuchMethodException ignored) {
+                // Expected on older versions, try next method name.
             } catch (Exception ignored) {
+                logDebugException("reflection:" + name, ignored);
             }
         }
         return null;
@@ -301,7 +314,7 @@ public class VanillaHook {
         JsonObject icon = new JsonObject();
         icon.addProperty("id", safeItem.getType().getKey().toString());
         JsonObject components = buildIconComponents(safeItem);
-        if (components.size() > 0) {
+        if (!components.isEmpty()) {
             icon.add("components", components);
         }
         return icon;
@@ -447,13 +460,15 @@ public class VanillaHook {
             if (colors != null) {
                 custom.add("colors", colors);
             }
-            if (custom.size() > 0) {
+            if (!custom.isEmpty()) {
                 components.add("minecraft:custom_model_data", custom);
                 return true;
             }
         } catch (NoSuchMethodException e) {
+            logDebugException("custom-model-data-component:missing-method", e);
             return false;
         } catch (Exception e) {
+            logDebugException("custom-model-data-component:failed", e);
             return false;
         }
         return false;
@@ -481,8 +496,9 @@ public class VanillaHook {
                     array.add((String) entry);
                 }
             }
-            return array.size() > 0 ? array : null;
+            return array.isEmpty() ? null : array;
         } catch (Exception e) {
+            logDebugException("custom-model-data-component:list:" + methodName, e);
             return null;
         }
     }
@@ -510,8 +526,9 @@ public class VanillaHook {
                     array.add((Number) rgb);
                 }
             }
-            return array.size() > 0 ? array : null;
+            return array.isEmpty() ? null : array;
         } catch (Exception e) {
+            logDebugException("custom-model-data-component:colors:" + methodName, e);
             return null;
         }
     }
@@ -529,10 +546,19 @@ public class VanillaHook {
                 components.addProperty("minecraft:item_model", key.toString());
             }
         } catch (NoSuchMethodException e) {
+            logDebugException("item-model:missing-method", e);
             return;
         } catch (Exception e) {
+            logDebugException("item-model:failed", e);
             return;
         }
+    }
+
+    private static void logDebugException(String context, Exception e) {
+        if (!SFAdvancements.getMainConfig().getBoolean("debug")) {
+            return;
+        }
+        SFAdvancements.warn("调试信息(" + context + "): " + e.getClass().getSimpleName() + ": " + e.getMessage());
     }
 
     private static void addSkullProfile(JsonObject components, ItemMeta meta) {
@@ -564,7 +590,7 @@ public class VanillaHook {
             profileJson.add("properties", properties);
         }
 
-        if (profileJson.size() > 0) {
+        if (!profileJson.isEmpty()) {
             components.add("minecraft:profile", profileJson);
         }
     }
@@ -610,6 +636,7 @@ public class VanillaHook {
     }
 
     private static String normalizeFrame(String frameType) {
+        // Null/unknown frames fall back to "task" to match vanilla default behavior.
         if (frameType == null) {
             return "task";
         }

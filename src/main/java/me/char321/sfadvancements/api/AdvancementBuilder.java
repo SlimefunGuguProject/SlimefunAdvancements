@@ -67,7 +67,19 @@ public class AdvancementBuilder {
 
         boolean hidden = config.getBoolean("hidden");
         if (!hidden) {
+            String hiddenRaw = config.getString("hidden");
+            if (hiddenRaw != null && hiddenRaw.equalsIgnoreCase("true")) {
+                hidden = true;
+            }
+        }
+        if (!hidden) {
             hidden = config.getBoolean("display.hidden");
+            if (!hidden) {
+                String hiddenRaw = config.getString("display.hidden");
+                if (hiddenRaw != null && hiddenRaw.equalsIgnoreCase("true")) {
+                    hidden = true;
+                }
+            }
         }
         builder.hidden(hidden);
 
