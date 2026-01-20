@@ -82,9 +82,10 @@ public final class SFAdvancements extends JavaPlugin implements SlimefunAddon {
         Bukkit.getScheduler().runTaskTimerAsynchronously(this, new AutoSaveTask(), 6000L, 6000L);
 
         Metrics metrics = new Metrics(this, 14130);
-        metrics.addCustomChart(new SimplePie("AdvancementAPI enabled", () -> config.getBoolean("use-advancements-api") ? "true" : "false"));
+        metrics.addCustomChart(new SimplePie("AdvancementAPI enabled",
+                () -> config.getBoolean("use-advancements-api") ? "true" : "false"));
 
-        //allow other plugins to register their criteria completers
+        // allow other plugins to register their criteria completers
         info("等待服务器启动中...");
         Utils.runLater(() -> {
             info("正在从配置文件中加载进度组...");
@@ -147,7 +148,7 @@ public final class SFAdvancements extends JavaPlugin implements SlimefunAddon {
         }
         groupConfig = YamlConfiguration.loadConfiguration(groupFile);
         for (String key : groupConfig.getKeys(false)) {
-            String background = groupConfig.getString(key + ".background", "slime_block.png");
+            String background = groupConfig.getString(key + ".background", "SLIME_BLOCK");
             ItemStack display = ConfigUtils.getItem(groupConfig, key + ".display");
             String frameType = groupConfig.getString(key + ".frame_type", "GOAL");
             AdvancementGroup group = new AdvancementGroup(key, display, frameType, background);
@@ -162,7 +163,8 @@ public final class SFAdvancements extends JavaPlugin implements SlimefunAddon {
         }
         advancementConfig = YamlConfiguration.loadConfiguration(advancementsFile);
         for (String key : advancementConfig.getKeys(false)) {
-            AdvancementBuilder builder = AdvancementBuilder.loadFromConfig(key, advancementConfig.getConfigurationSection(key));
+            AdvancementBuilder builder = AdvancementBuilder.loadFromConfig(key,
+                    advancementConfig.getConfigurationSection(key));
             if (builder != null) {
                 builder.register();
             }

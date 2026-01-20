@@ -42,7 +42,8 @@ public class VanillaHook {
     private BackgroundStyle backgroundStyle = BackgroundStyle.RESOURCE_LOCATION;
 
     public void init() {
-        if (initialized) return;
+        if (initialized)
+            return;
         initialized = true;
 
         Utils.listen(new PlayerJoinListener());
@@ -90,7 +91,7 @@ public class VanillaHook {
                 SFAdvancements.warn("无法移除进度 " + key + ": " + e.getMessage());
             }
         }
-        if (removedAny && SFAdvancements.getMainConfig().getBoolean("reload-data-on-adv-remove", true)) {
+        if (removedAny && SFAdvancements.getMainConfig().getBoolean("reload-data-on-adv-remove")) {
             Bukkit.reloadData();
         }
     }
@@ -101,22 +102,21 @@ public class VanillaHook {
             ItemStack item = safeDisplayItem(group.getDisplayItem());
             ItemMeta meta = item.getItemMeta();
             JsonElement title = meta != null && meta.hasDisplayName()
-                ? legacyToJson(meta.getDisplayName())
-                : componentToJson(Utils.getItemName(item));
+                    ? legacyToJson(meta.getDisplayName())
+                    : componentToJson(Utils.getItemName(item));
             List<String> lore = meta != null && meta.getLore() != null ? meta.getLore() : new ArrayList<>();
             String description = String.join("\n", lore);
             String rawBackground = group.getBackground();
             String resolvedBackground = resolveBackground(rawBackground, backgroundStyle);
             JsonObject json = buildAdvancementJson(
-                null,
-                item,
-                title,
-                description,
-                group.getFrameType(),
-                false,
-                resolvedBackground,
-                false
-            );
+                    null,
+                    item,
+                    title,
+                    description,
+                    group.getFrameType(),
+                    false,
+                    resolvedBackground,
+                    false);
             logGroupDebug(group.getId(), rawBackground, resolvedBackground, key, json);
             loadAdvancement(key, json);
             logResolvedBackgroundFromServer(key);
@@ -130,8 +130,10 @@ public class VanillaHook {
     }
 
     private void registerAdvancement(Advancement advancement) {
-        if (advancement == null) return;
-        if (loadedKeys.contains(advancement.getKey())) return;
+        if (advancement == null)
+            return;
+        if (loadedKeys.contains(advancement.getKey()))
+            return;
         NamespacedKey parentKey = advancement.getParent();
         if (parentKey != null && !loadedKeys.contains(parentKey)) {
             Advancement parent = Utils.fromKey(parentKey);
@@ -143,23 +145,23 @@ public class VanillaHook {
         ItemStack item = safeDisplayItem(advancement.getDisplay());
         ItemMeta meta = item.getItemMeta();
         JsonElement titleComponent = meta != null && meta.hasDisplayName()
-            ? legacyToJson(meta.getDisplayName())
-            : componentToJson(Utils.getItemName(item));
+                ? legacyToJson(meta.getDisplayName())
+                : componentToJson(Utils.getItemName(item));
         String description = getDescriptionFor(meta != null ? meta.getLore() : null, advancement);
         JsonObject json = buildAdvancementJson(
-            parentKey,
-            item,
-            titleComponent,
-            description,
-            advancement.getFrameType(),
-            advancement.isHidden(),
-            null,
-            true
-        );
+                parentKey,
+                item,
+                titleComponent,
+                description,
+                advancement.getFrameType(),
+                advancement.isHidden(),
+                null,
+                true);
         loadAdvancement(advancement.getKey(), json);
     }
 
-    private void logGroupDebug(String groupId, String rawBackground, String resolvedBackground, NamespacedKey key, JsonObject json) {
+    private void logGroupDebug(String groupId, String rawBackground, String resolvedBackground, NamespacedKey key,
+            JsonObject json) {
         if (!SFAdvancements.getMainConfig().getBoolean("debug")) {
             return;
         }
@@ -272,15 +274,14 @@ public class VanillaHook {
     }
 
     private static JsonObject buildAdvancementJson(
-        @Nullable NamespacedKey parent,
-        ItemStack item,
-        JsonElement title,
-        String description,
-        String frameType,
-        boolean hidden,
-        @Nullable String background,
-        boolean showToast
-    ) {
+            @Nullable NamespacedKey parent,
+            ItemStack item,
+            JsonElement title,
+            String description,
+            String frameType,
+            boolean hidden,
+            @Nullable String background,
+            boolean showToast) {
         JsonObject root = new JsonObject();
         if (parent != null) {
             root.addProperty("parent", parent.toString());
@@ -330,8 +331,8 @@ public class VanillaHook {
     private static String resolveBackground(@Nullable String background, BackgroundStyle style) {
         if (background == null || background.trim().isEmpty()) {
             return style == BackgroundStyle.TEXTURES_PATH
-                ? "minecraft:textures/block/slime_block.png"
-                : "block/slime_block";
+                    ? "minecraft:textures/block/slime_block.png"
+                    : "block/slime_block";
         }
 
         String raw = background.trim().replace('\\', '/');
