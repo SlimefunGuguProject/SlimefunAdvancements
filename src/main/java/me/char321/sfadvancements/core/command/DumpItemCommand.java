@@ -30,9 +30,13 @@ public class DumpItemCommand implements SubCommand {
 
         sender.sendMessage("正在生成序列化配置...");
         ItemStack item = p.getInventory().getItemInMainHand();
+        if (item == null || item.getType().isAir()) {
+            sender.sendMessage(ChatColor.RED + "请手持一个物品再执行此指令。");
+            return true;
+        }
         SFAdvancements.info("物品序列化配置: " + item);
 
-        if(!item.hasItemMeta()) {
+        if (!item.hasItemMeta()) {
             SFAdvancements.info("该物品可以直接使用该ID表示: \n" + item.getType().name());
         }
 
@@ -40,19 +44,21 @@ public class DumpItemCommand implements SubCommand {
 
         String type = item.getType().name();
 
-        Optional<String> itemData = Slimefun.getItemDataService().getItemData(im);
-        if (itemData.isPresent()) {
-            String id = itemData.get();
-            if (SlimefunUtils.isItemSimilar(item, SlimefunItem.getById(id).getItem(), true)) {
-                SFAdvancements.info("该物品可以直接使用该ID表示: \n" + id);
+        if (im != null) {
+            Optional<String> itemData = Slimefun.getItemDataService().getItemData(im);
+            if (itemData.isPresent()) {
+                String id = itemData.get();
+                if (SlimefunUtils.isItemSimilar(item, SlimefunItem.getById(id).getItem(), true)) {
+                    SFAdvancements.info("该物品可以直接使用该ID表示: \n" + id);
+                }
+                type = id;
             }
-            type = id;
         }
 
         StringBuilder representation = new StringBuilder();
         representation.append("type: ").append(type).append("\n");
         representation.append("name: ").append(ItemUtils.getItemName(item).replace(ChatColor.COLOR_CHAR, '&').replaceAll("[\\[\\]]", "")).append("\n");
-        if(im.hasLore()) {
+        if (im != null && im.hasLore()) {
             representation.append("lore: ").append("\n");
             for (String s : im.getLore()) {
                 representation.append("  - ").append(s.replace(ChatColor.COLOR_CHAR, '&')).append("\n");

@@ -9,3 +9,9 @@ announce-advancements: true
 
 # 是否将粘液科技进度的按钮添加到粘液科技的指南中
 add-advancements-to-guide: true
+
+# 是否输出调试日志
+debug: false
+
+# 在移除进度后是否执行 Bukkit.reloadData (可能造成卡顿)
+reload-data-on-adv-remove: true
