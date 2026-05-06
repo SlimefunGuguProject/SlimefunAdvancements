@@ -1,0 +1,20 @@
+# 数据存储方式
+# local: 保存在插件数据目录的 advancements 文件夹中
+# mysql: 保存到 MySQL, 多个服务器连接同一个数据库即可共享进度
+type: local
+
+mysql:
+  host: localhost
+  port: 3306
+  database: minecraft
+  username: root
+  password: ""
+  table: sfadvancements_progress
+
+  # 如果填写 jdbc-url, 会优先使用该地址, host/port/database 将被忽略
+  jdbc-url: ""
+
+  use-ssl: false
+  server-timezone: UTC
+  connect-timeout: 10000
+  socket-timeout: 30000

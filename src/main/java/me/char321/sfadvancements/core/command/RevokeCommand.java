@@ -10,9 +10,11 @@ import org.bukkit.command.CommandSender;
 import org.bukkit.entity.Player;
 
 import javax.annotation.Nonnull;
+import java.io.IOException;
 import java.util.ArrayList;
 import java.util.Collections;
 import java.util.List;
+import java.util.logging.Level;
 
 public class RevokeCommand implements SubCommand {
     @Override
@@ -33,6 +35,7 @@ public class RevokeCommand implements SubCommand {
             for (NamespacedKey adv : progress.getCompletedAdvancements()) {
                 progress.revokeAdvancement(adv);
             }
+            saveExact(sender, p);
             sender.sendMessage("已清除玩家的所有进度!");
             return true;
         }
@@ -41,8 +44,18 @@ public class RevokeCommand implements SubCommand {
             sender.sendMessage(ChatColor.RED + "无法清除玩家 " + args[1] + " 的进度 " + args[2]);
             return false;
         } else {
+            saveExact(sender, p);
             sender.sendMessage("已成功清除该进度!");
             return true;
+        }
+    }
+
+    private void saveExact(CommandSender sender, Player player) {
+        try {
+            SFAdvancements.getAdvManager().saveExact(player.getUniqueId());
+        } catch (IOException e) {
+            sender.sendMessage(ChatColor.RED + "进度已在内存中清除，但保存到存储时发生错误，请检查控制台。");
+            SFAdvancements.logger().log(Level.SEVERE, e, () -> "无法保存撤销后的玩家进度");
         }
     }
 
