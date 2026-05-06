@@ -15,3 +15,9 @@ debug: false
 
 # 在移除进度后是否执行 Bukkit.reloadData (可能造成卡顿)
 reload-data-on-adv-remove: true
+
+# 每 tick 注册多少个原版进度，调高会更快完成但可能造成主线程卡顿
+vanilla-registration-per-tick: 1
+
+# How many vanilla advancement progress states to sync per tick.
+vanilla-sync-per-tick: 8

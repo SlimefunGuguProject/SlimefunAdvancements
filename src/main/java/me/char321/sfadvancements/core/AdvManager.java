@@ -6,6 +6,7 @@ import me.char321.sfadvancements.core.criteria.progress.PlayerProgress;
 import org.bukkit.entity.Player;
 
 import java.io.IOException;
+import java.util.ArrayList;
 import java.util.HashMap;
 import java.util.Map;
 import java.util.UUID;
@@ -45,8 +46,22 @@ public class AdvManager {
         return playerMap;
     }
 
+    public void unload(UUID player) throws IOException {
+        PlayerProgress progress = playerMap.remove(player);
+        if (progress != null) {
+            progress.save();
+        }
+    }
+
+    public void saveExact(UUID player) throws IOException {
+        PlayerProgress progress = playerMap.get(player);
+        if (progress != null) {
+            progress.save(false);
+        }
+    }
+
     public void save() throws IOException {
-        for (Map.Entry<UUID, PlayerProgress> entry : playerMap.entrySet()) {
+        for (Map.Entry<UUID, PlayerProgress> entry : new ArrayList<>(playerMap.entrySet())) {
             entry.getValue().save(); //someone please tell me if this can cause a concurrentmodificationexception
         }
     }

@@ -7,11 +7,15 @@ import me.char321.sfadvancements.api.AdvancementGroup;
 import me.char321.sfadvancements.api.criteria.CriteriaTypes;
 import me.char321.sfadvancements.core.AdvManager;
 import me.char321.sfadvancements.core.AdvancementsItemGroup;
+import me.char321.sfadvancements.core.PlayerProgressListener;
 import me.char321.sfadvancements.core.command.SFACommand;
 import me.char321.sfadvancements.core.criteria.completer.CriterionCompleter;
 import me.char321.sfadvancements.core.criteria.completer.DefaultCompleters;
 import me.char321.sfadvancements.core.gui.AdvGUIManager;
 import me.char321.sfadvancements.core.registry.AdvancementsRegistry;
+import me.char321.sfadvancements.core.storage.LocalProgressStorage;
+import me.char321.sfadvancements.core.storage.MySqlProgressStorage;
+import me.char321.sfadvancements.core.storage.ProgressStorage;
 import me.char321.sfadvancements.core.tasks.AutoSaveTask;
 import me.char321.sfadvancements.util.ConfigUtils;
 import me.char321.sfadvancements.util.Utils;
@@ -28,7 +32,6 @@ import javax.annotation.Nonnull;
 import javax.annotation.Nullable;
 import java.io.File;
 import java.io.IOException;
-import java.lang.reflect.Method;
 import java.util.logging.Level;
 import java.util.logging.Logger;
 
@@ -40,8 +43,10 @@ public final class SFAdvancements extends JavaPlugin implements SlimefunAddon {
     private final VanillaHook vanillaHook = new VanillaHook();
 
     private Config config;
+    private YamlConfiguration storageConfig;
     private YamlConfiguration advancementConfig;
     private YamlConfiguration groupConfig;
+    private ProgressStorage progressStorage;
 
     private boolean multiBlockCraftEvent = false;
 
@@ -61,6 +66,13 @@ public final class SFAdvancements extends JavaPlugin implements SlimefunAddon {
         }
 
         config = new Config(this);
+        try {
+            initProgressStorage();
+        } catch (IOException e) {
+            getLogger().log(Level.SEVERE, "无法初始化进度存储", e);
+            getServer().getPluginManager().disablePlugin(this);
+            return;
+        }
 
         detectCapabilities();
 
@@ -70,6 +82,7 @@ public final class SFAdvancements extends JavaPlugin implements SlimefunAddon {
 
         // init gui
         Bukkit.getPluginManager().registerEvents(guiManager, this);
+        Bukkit.getPluginManager().registerEvents(new PlayerProgressListener(), this);
 
         // init sf
         AdvancementsItemGroup.init(this);
@@ -108,6 +121,13 @@ public final class SFAdvancements extends JavaPlugin implements SlimefunAddon {
         } catch (IOException e) {
             getLogger().log(Level.SEVERE, e, () -> "无法保存进度");
         }
+        try {
+            if (progressStorage != null) {
+                progressStorage.close();
+            }
+        } catch (IOException e) {
+            getLogger().log(Level.SEVERE, e, () -> "无法关闭进度存储");
+        }
     }
 
     private void detectCapabilities() {
@@ -128,6 +148,12 @@ public final class SFAdvancements extends JavaPlugin implements SlimefunAddon {
 
     public void reload() {
         config.reload();
+        try {
+            advManager.save();
+            initProgressStorage();
+        } catch (IOException e) {
+            getLogger().log(Level.SEVERE, "无法重载进度存储", e);
+        }
         advManager.getPlayerMap().clear();
         registry.getAdvancements().clear();
         registry.getAdvancementGroups().clear();
@@ -139,6 +165,30 @@ public final class SFAdvancements extends JavaPlugin implements SlimefunAddon {
         if (config.getBoolean("use-advancements-api")) {
             vanillaHook.reload();
         }
+    }
+
+    private void initProgressStorage() throws IOException {
+        File storageFile = new File(getDataFolder(), "storage.yml");
+        if (!storageFile.exists()) {
+            saveResource("storage.yml", false);
+        }
+        storageConfig = YamlConfiguration.loadConfiguration(storageFile);
+
+        ProgressStorage newStorage;
+        String type = storageConfig.getString("type", "local");
+        if ("mysql".equalsIgnoreCase(type)) {
+            newStorage = new MySqlProgressStorage(storageConfig.getConfigurationSection("mysql"));
+            info("正在使用 MySQL 进度存储...");
+        } else {
+            newStorage = new LocalProgressStorage();
+            info("正在使用本地文件进度存储...");
+        }
+
+        newStorage.init();
+        if (progressStorage != null) {
+            progressStorage.close();
+        }
+        progressStorage = newStorage;
     }
 
     public void loadGroups() {
@@ -213,6 +263,14 @@ public final class SFAdvancements extends JavaPlugin implements SlimefunAddon {
 
     public YamlConfiguration getGroupsConfig() {
         return groupConfig;
+    }
+
+    public YamlConfiguration getStorageConfig() {
+        return storageConfig;
+    }
+
+    public static ProgressStorage getProgressStorage() {
+        return instance.progressStorage;
     }
 
     public boolean isMultiBlockCraftEvent() {

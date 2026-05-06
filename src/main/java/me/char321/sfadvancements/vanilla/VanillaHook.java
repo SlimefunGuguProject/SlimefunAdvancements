@@ -26,12 +26,14 @@ import org.bukkit.profile.PlayerTextures;
 import javax.annotation.Nullable;
 import java.lang.reflect.Method;
 import java.nio.charset.StandardCharsets;
+import java.util.ArrayDeque;
 import java.util.ArrayList;
 import java.util.Base64;
 import java.util.HashSet;
 import java.util.List;
 import java.util.Locale;
 import java.util.Map;
+import java.util.Queue;
 import java.util.Set;
 import java.util.concurrent.ConcurrentHashMap;
 
@@ -40,6 +42,8 @@ public class VanillaHook {
     private boolean initialized = false;
     private final Set<NamespacedKey> loadedKeys = ConcurrentHashMap.newKeySet();
     private BackgroundStyle backgroundStyle = BackgroundStyle.RESOURCE_LOCATION;
+    private int registrationTask = -1;
+    private int syncTask = -1;
 
     public void init() {
         if (initialized)
@@ -55,15 +59,12 @@ public class VanillaHook {
         if (!initialized) {
             init();
         }
+        cancelRegistrationTask();
+        cancelSyncTask();
         removeExistingAdvancements();
         loadedKeys.clear();
         logVanillaRootBackground();
-        registerGroups();
-        registerAdvancements();
-
-        for (Player p : Bukkit.getOnlinePlayers()) {
-            syncProgress(p);
-        }
+        registerGradually();
     }
 
     private void removeExistingAdvancements() {
@@ -129,6 +130,165 @@ public class VanillaHook {
         }
     }
 
+    private void registerGradually() {
+        Queue<RegistrationEntry> registrations = new ArrayDeque<>();
+        for (AdvancementGroup group : SFAdvancements.getRegistry().getAdvancementGroups()) {
+            registrations.offer(new RegistrationEntry(group, null));
+        }
+        for (Map.Entry<NamespacedKey, Advancement> entry : SFAdvancements.getRegistry().getAdvancements().entrySet()) {
+            registrations.offer(new RegistrationEntry(null, entry.getValue()));
+        }
+
+        if (registrations.isEmpty()) {
+            syncOnlinePlayersGradually();
+            return;
+        }
+
+        final int perTick = Math.max(1, SFAdvancements.getMainConfig().getConfiguration()
+                .getInt("vanilla-registration-per-tick", 1));
+        final int maxDeferrals = Math.max(100, registrations.size() * 4);
+        final int[] deferrals = {0};
+        registrationTask = Bukkit.getScheduler().runTaskTimer(SFAdvancements.instance(), () -> {
+            int registered = 0;
+            while (!registrations.isEmpty() && registered < perTick) {
+                RegistrationEntry entry = registrations.poll();
+                if (!entry.canRegister()) {
+                    deferrals[0]++;
+                    if (deferrals[0] > maxDeferrals) {
+                        SFAdvancements.warn("原版进度注册等待父进度超时，跳过: " + entry.key());
+                    } else {
+                        registrations.offer(entry);
+                    }
+                    registered++;
+                    continue;
+                }
+
+                deferrals[0] = 0;
+                if (entry.register()) {
+                    registered++;
+                }
+            }
+
+            if (registrations.isEmpty()) {
+                cancelRegistrationTask();
+                syncOnlinePlayersGradually();
+                SFAdvancements.info("原版进度注册完成: " + loadedKeys.size() + " 个");
+            }
+        }, 1L, 1L).getTaskId();
+    }
+
+    private void registerGroup(AdvancementGroup group) {
+        NamespacedKey key = Utils.keyOf(group.getId());
+        ItemStack item = safeDisplayItem(group.getDisplayItem());
+        ItemMeta meta = item.getItemMeta();
+        JsonElement title = meta != null && meta.hasDisplayName()
+                ? legacyToJson(meta.getDisplayName())
+                : componentToJson(Utils.getItemName(item));
+        List<String> lore = meta != null && meta.getLore() != null ? meta.getLore() : new ArrayList<>();
+        String description = String.join("\n", lore);
+        String rawBackground = group.getBackground();
+        String resolvedBackground = resolveBackground(rawBackground, backgroundStyle);
+        JsonObject json = buildAdvancementJson(
+                null,
+                item,
+                title,
+                description,
+                group.getFrameType(),
+                false,
+                resolvedBackground,
+                false);
+        logGroupDebug(group.getId(), rawBackground, resolvedBackground, key, json);
+        loadAdvancement(key, json);
+        logResolvedBackgroundFromServer(key);
+    }
+
+    private void syncOnlinePlayers() {
+        syncOnlinePlayersGradually();
+    }
+
+    private void syncOnlinePlayersGradually() {
+        cancelSyncTask();
+        Queue<Player> players = new ArrayDeque<>(Bukkit.getOnlinePlayers());
+        if (players.isEmpty()) {
+            return;
+        }
+
+        final int perTick = Math.max(1, SFAdvancements.getMainConfig().getConfiguration()
+                .getInt("vanilla-sync-per-tick", 8));
+        syncTask = Bukkit.getScheduler().runTaskTimer(SFAdvancements.instance(), new Runnable() {
+            private Player player;
+            private Queue<NamespacedKey> pendingKeys = new ArrayDeque<>();
+
+            @Override
+            public void run() {
+                int synced = 0;
+                while (synced < perTick) {
+                    if ((player == null || pendingKeys.isEmpty()) && !startNextPlayer()) {
+                        cancelSyncTask();
+                        return;
+                    }
+
+                    NamespacedKey key = pendingKeys.poll();
+                    if (key == null) {
+                        continue;
+                    }
+
+                    syncProgressKey(player, key);
+                    synced++;
+                }
+            }
+
+            private boolean startNextPlayer() {
+                while (!players.isEmpty()) {
+                    Player next = players.poll();
+                    if (next == null || !next.isOnline()) {
+                        continue;
+                    }
+                    player = next;
+                    pendingKeys = buildSyncKeys();
+                    if (!pendingKeys.isEmpty()) {
+                        return true;
+                    }
+                }
+                return false;
+            }
+        }, 1L, 1L).getTaskId();
+    }
+
+    private Queue<NamespacedKey> buildSyncKeys() {
+        Queue<NamespacedKey> keys = new ArrayDeque<>();
+        for (AdvancementGroup group : SFAdvancements.getRegistry().getAdvancementGroups()) {
+            keys.offer(Utils.keyOf(group.getId()));
+        }
+        for (Advancement adv : SFAdvancements.getRegistry().getAdvancements().values()) {
+            keys.offer(adv.getKey());
+        }
+        return keys;
+    }
+
+    private void syncProgressKey(Player player, NamespacedKey key) {
+        Advancement adv = Utils.fromKey(key);
+        if (adv == null || SFAdvancements.getAdvManager().isCompleted(player, adv)) {
+            completeNow(player, key);
+        } else {
+            revokeNow(player, key);
+        }
+    }
+
+    private void cancelRegistrationTask() {
+        if (registrationTask != -1) {
+            Bukkit.getScheduler().cancelTask(registrationTask);
+            registrationTask = -1;
+        }
+    }
+
+    private void cancelSyncTask() {
+        if (syncTask != -1) {
+            Bukkit.getScheduler().cancelTask(syncTask);
+            syncTask = -1;
+        }
+    }
+
     private void registerAdvancement(Advancement advancement) {
         if (advancement == null)
             return;
@@ -136,9 +296,9 @@ public class VanillaHook {
             return;
         NamespacedKey parentKey = advancement.getParent();
         if (parentKey != null && !loadedKeys.contains(parentKey)) {
-            Advancement parent = Utils.fromKey(parentKey);
-            if (parent != null) {
-                registerAdvancement(parent);
+            Advancement localParent = Utils.fromKey(parentKey);
+            if (localParent != null || Bukkit.getAdvancement(parentKey) == null) {
+                return;
             }
         }
 
@@ -661,44 +821,108 @@ public class VanillaHook {
     }
 
     public void syncProgress(Player p) {
-        for (AdvancementGroup group : SFAdvancements.getRegistry().getAdvancementGroups()) {
-            complete(p, Utils.keyOf(group.getId()));
+        syncPlayerGradually(p);
+    }
+
+    private void syncPlayerGradually(Player player) {
+        if (player == null || !player.isOnline()) {
+            return;
         }
-        for (Advancement adv : SFAdvancements.getRegistry().getAdvancements().values()) {
-            if (SFAdvancements.getAdvManager().isCompleted(p, adv)) {
-                complete(p, adv.getKey());
-            } else {
-                revoke(p, adv.getKey());
+        final Queue<NamespacedKey> pendingKeys = buildSyncKeys();
+        if (pendingKeys.isEmpty()) {
+            return;
+        }
+        final int perTick = Math.max(1, SFAdvancements.getMainConfig().getConfiguration()
+                .getInt("vanilla-sync-per-tick", 8));
+        Bukkit.getScheduler().runTaskTimer(SFAdvancements.instance(), task -> {
+            if (!player.isOnline()) {
+                task.cancel();
+                return;
             }
-        }
+
+            int synced = 0;
+            while (!pendingKeys.isEmpty() && synced < perTick) {
+                syncProgressKey(player, pendingKeys.poll());
+                synced++;
+            }
+
+            if (pendingKeys.isEmpty()) {
+                task.cancel();
+            }
+        }, 1L, 1L);
     }
 
     public void complete(Player p, NamespacedKey key) {
+        Utils.runSync(() -> completeNow(p, key));
+    }
+
+    private void completeNow(Player p, NamespacedKey key) {
         org.bukkit.advancement.Advancement advancement = Bukkit.getAdvancement(key);
         if (advancement == null) {
             SFAdvancements.warn("尝试完成未注册的成就 " + key);
             return;
         }
-        Utils.runSync(() -> {
-            AdvancementProgress progress = p.getAdvancementProgress(advancement);
-            if (!progress.isDone()) {
-                progress.awardCriteria("impossible");
-            }
-        });
+        AdvancementProgress progress = p.getAdvancementProgress(advancement);
+        if (!progress.isDone()) {
+            progress.awardCriteria("impossible");
+        }
     }
 
     public void revoke(Player p, NamespacedKey key) {
+        Utils.runSync(() -> revokeNow(p, key));
+    }
+
+    private void revokeNow(Player p, NamespacedKey key) {
         org.bukkit.advancement.Advancement advancement = Bukkit.getAdvancement(key);
         if (advancement == null) {
             SFAdvancements.warn("尝试撤销未注册的成就 " + key);
             return;
         }
-        Utils.runSync(() -> {
-            AdvancementProgress progress = p.getAdvancementProgress(advancement);
-            if (progress.isDone()) {
-                progress.revokeCriteria("impossible");
-            }
-        });
+        AdvancementProgress progress = p.getAdvancementProgress(advancement);
+        if (progress.isDone()) {
+            progress.revokeCriteria("impossible");
+        }
 
+    }
+
+    private final class RegistrationEntry {
+        private final AdvancementGroup group;
+        private final Advancement advancement;
+
+        private RegistrationEntry(@Nullable AdvancementGroup group, @Nullable Advancement advancement) {
+            this.group = group;
+            this.advancement = advancement;
+        }
+
+        boolean canRegister() {
+            if (advancement == null) {
+                return true;
+            }
+            NamespacedKey parentKey = advancement.getParent();
+            if (parentKey == null || loadedKeys.contains(parentKey)) {
+                return true;
+            }
+            Advancement localParent = Utils.fromKey(parentKey);
+            return localParent == null && Bukkit.getAdvancement(parentKey) != null;
+        }
+
+        boolean register() {
+            if (group != null) {
+                registerGroup(group);
+                return true;
+            }
+            if (advancement != null) {
+                registerAdvancement(advancement);
+                return true;
+            }
+            return false;
+        }
+
+        NamespacedKey key() {
+            if (group != null) {
+                return Utils.keyOf(group.getId());
+            }
+            return advancement == null ? null : advancement.getKey();
+        }
     }
 }
