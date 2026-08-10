@@ -137,9 +137,9 @@
         </dependency>
 
         <dependency>
-            <groupId>com.github.Slimefun</groupId>
+            <groupId>com.github.SlimefunGuguProject</groupId>
             <artifactId>Slimefun4</artifactId>
-            <version>RC-36</version>
+            <version>2025.1.2</version>
             <scope>provided</scope>
             <exclusions>
                 <exclusion>
@@ -188,6 +188,13 @@
             <groupId>net.guizhanss</groupId>
             <artifactId>GuizhanLibPlugin</artifactId>
             <version>2.5.0</version>
+            <scope>provided</scope>
+        </dependency>
+
+        <dependency>
+            <groupId>com.github.balugaq</groupId>
+            <artifactId>JustEnoughGuide</artifactId>
+            <version>67995bd0f9</version>
             <scope>provided</scope>
         </dependency>
     </dependencies>

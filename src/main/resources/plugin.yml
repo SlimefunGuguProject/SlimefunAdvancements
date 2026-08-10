@@ -3,7 +3,7 @@ version: '${project.version}'
 main: me.char321.sfadvancements.SFAdvancements
 api-version: 1.18
 depend: [ Slimefun ]
-softdepend: [ GuizhanLibPlugin ]
+softdepend: [ GuizhanLibPlugin, JustEnoughGuide ]
 authors: [ char321 ]
 
 commands:
