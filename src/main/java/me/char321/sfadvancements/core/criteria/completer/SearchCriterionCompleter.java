@@ -49,14 +49,19 @@ public class SearchCriterionCompleter implements CriterionCompleter {
         Bukkit.getScheduler().runTaskTimer(SFAdvancements.instance(), () -> {
             for (Player onlinePlayer : Bukkit.getOnlinePlayers()) {
                 PlayerProfile.get(onlinePlayer, profile -> {
-                    if (jegSupported && profile.getGuideHistory() instanceof JEGGuideHistory jeg) {
-                        var entry = jeg.getLastEntry(false);
-                        if (entry instanceof JEGGuideEntry.SearchTermEntry searchTermEntry) {
-                            Utils.runSync(() -> onSearch(onlinePlayer, searchTermEntry.get()));
+                    // 由于未知情况，两次 profile.getGuideHistory() 可能会获取不同的结果导致 ClassCastException
+                    // 故仅获取一次，以避免报错
+                    GuideHistory history = profile.getGuideHistory();
+                    if (jegSupported) {
+                        if (history instanceof JEGGuideHistory jeg) {
+                            var entry = jeg.getLastEntry(false);
+                            if (entry instanceof JEGGuideEntry.SearchTermEntry searchTermEntry) {
+                                Utils.runSync(() -> onSearch(onlinePlayer, searchTermEntry.get()));
+                            }
                         }
                     } else {
                         try {
-                            Deque<?> queue = (Deque<?>) queueField.get(profile.getGuideHistory());
+                            Deque<?> queue = (Deque<?>) queueField.get(history);
                             if (!queue.isEmpty()) {
                                 Object str = getIndexedObject.invoke(queue.getLast());
                                 if (str instanceof String) {
