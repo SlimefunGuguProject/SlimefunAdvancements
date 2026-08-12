@@ -32,3 +32,6 @@ permissions:
   sfa.command.import:
     description: Allows you to import default advancements from other plugins (if supported)
     default: op
+  sfa.command.upload:
+    description: Allows you to upload local advancement progress files to MySQL storage.
+    default: op

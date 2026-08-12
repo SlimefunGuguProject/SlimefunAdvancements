@@ -2,7 +2,6 @@ package me.char321.sfadvancements.core.criteria.progress;
 
 import com.google.gson.JsonElement;
 import com.google.gson.JsonObject;
-import com.google.gson.JsonParser;
 import com.google.gson.stream.JsonWriter;
 import me.char321.sfadvancements.SFAdvancements;
 import me.char321.sfadvancements.api.Advancement;
@@ -12,15 +11,8 @@ import org.bukkit.Bukkit;
 import org.bukkit.NamespacedKey;
 import org.bukkit.entity.Player;
 
-import java.io.BufferedReader;
-import java.io.BufferedWriter;
-import java.io.File;
-import java.io.FileInputStream;
-import java.io.FileOutputStream;
 import java.io.IOException;
-import java.io.InputStreamReader;
-import java.io.OutputStreamWriter;
-import java.nio.charset.StandardCharsets;
+import java.io.StringWriter;
 import java.util.ArrayList;
 import java.util.HashMap;
 import java.util.List;
@@ -37,6 +29,7 @@ import java.util.logging.Level;
 public class PlayerProgress {
     private final UUID player;
     private final Map<NamespacedKey, AdvancementProgress> progressMap = new HashMap<>();
+    private boolean saveQueued = false;
 
     private PlayerProgress(UUID player) {
         this.player = player;
@@ -48,21 +41,16 @@ public class PlayerProgress {
 
     public static PlayerProgress get(UUID player) {
         PlayerProgress res = new PlayerProgress(player);
-
-        File advancementsFolder = new File(SFAdvancements.instance().getDataFolder(), "/advancements");
-        File f = new File(advancementsFolder, player.toString() + ".json");
-        if (f.exists()) {
-            try {
-                JsonObject object = JsonParser.parseReader(new BufferedReader(new InputStreamReader(new FileInputStream(f), StandardCharsets.UTF_8))).getAsJsonObject();
-                res.loadFromObject(object);
-            } catch (IOException e) {
-                SFAdvancements.logger().log(Level.SEVERE, "读取进度时发生错误", e);
-            }
+        try {
+            JsonObject object = SFAdvancements.getProgressStorage().load(player);
+            res.loadFromObject(object);
+        } catch (IOException | IllegalStateException e) {
+            SFAdvancements.logger().log(Level.SEVERE, "读取进度时发生错误", e);
         }
         return res;
     }
 
-    public void doCriterion(Criterion criterion) {
+    public synchronized void doCriterion(Criterion criterion) {
         NamespacedKey adv = criterion.getAdvancement();
         progressMap.computeIfAbsent(adv, AdvancementProgress::new);
 
@@ -71,6 +59,7 @@ public class PlayerProgress {
             return;
         }
 
+        boolean changed = false;
         for (CriteriaProgress progress : advProgress.criteria) {
             if (!progress.id.equals(criterion.getId())) {
                 continue;
@@ -78,15 +67,19 @@ public class PlayerProgress {
 
             if (progress.progress < criterion.getCount()) {
                 progress.progress++;
+                changed = true;
                 if (progress.progress >= criterion.getCount()) {
                     progress.done = true;
                     advProgress.updateDone();
                 }
             }
         }
+        if (changed) {
+            saveAsync();
+        }
     }
 
-    public void completeCriterion(Criterion criterion) {
+    public synchronized void completeCriterion(Criterion criterion) {
         NamespacedKey adv = criterion.getAdvancement();
         AdvancementProgress progress = progressMap.computeIfAbsent(adv, AdvancementProgress::new);
 
@@ -102,10 +95,11 @@ public class PlayerProgress {
             criteriaProgress.done = true;
             criteriaProgress.progress = criterion.getCount();
             progress.updateDone();
+            saveAsync();
         }
     }
 
-    public int getCriterionProgress(Criterion cri) {
+    public synchronized int getCriterionProgress(Criterion cri) {
         NamespacedKey adv = cri.getAdvancement();
         if (!progressMap.containsKey(adv)) {
             return 0;
@@ -120,7 +114,7 @@ public class PlayerProgress {
         throw new IllegalStateException();
     }
 
-    public boolean revokeAdvancement(NamespacedKey adv) {
+    public synchronized boolean revokeAdvancement(NamespacedKey adv) {
         if (!progressMap.containsKey(adv)) {
             return false;
         }
@@ -130,10 +124,11 @@ public class PlayerProgress {
             progress.progress = 0;
         }
         Utils.fromKey(adv).revoke(Bukkit.getPlayer(player));
+        saveAsync();
         return true;
     }
 
-    public List<NamespacedKey> getCompletedAdvancements() {
+    public synchronized List<NamespacedKey> getCompletedAdvancements() {
         List<NamespacedKey> res = new ArrayList<>();
         for (Map.Entry<NamespacedKey, AdvancementProgress> entry : progressMap.entrySet()) {
             if (entry.getValue().done) {
@@ -143,10 +138,10 @@ public class PlayerProgress {
         return res;
     }
 
-    private void loadFromObject(JsonObject object) {
+    private synchronized void loadFromObject(JsonObject object) {
         for (Map.Entry<String, JsonElement> entry : object.entrySet()) {
             NamespacedKey advkey = NamespacedKey.fromString(entry.getKey());
-            if(!Utils.isValidAdvancement(advkey)) {
+            if(advkey == null || !Utils.isValidAdvancement(advkey)) {
                 SFAdvancements.warn("未知进度: " + advkey);
                 continue;
             }
@@ -156,17 +151,18 @@ public class PlayerProgress {
         }
     }
 
-    public void save() throws IOException {
-        File advancementsFolder = new File(SFAdvancements.instance().getDataFolder(), "/advancements");
-        File f = new File(advancementsFolder, player +".json");
-        if (!f.exists()) {
-            f.getParentFile().mkdirs();
-            if (!f.createNewFile()) {
-                throw new IOException("无法创建文件 " + f.getPath());
-            }
-        }
+    public synchronized void save() throws IOException {
+        save(true);
+    }
 
-        try(JsonWriter writer = new JsonWriter(new BufferedWriter(new OutputStreamWriter(new FileOutputStream(f, false), StandardCharsets.UTF_8)))) {
+    public synchronized void save(boolean merge) throws IOException {
+        SFAdvancements.getProgressStorage().save(player, toJsonObject(), merge);
+        saveQueued = false;
+    }
+
+    public synchronized JsonObject toJsonObject() throws IOException {
+        StringWriter stringWriter = new StringWriter();
+        try(JsonWriter writer = new JsonWriter(stringWriter)) {
             writer.beginObject();
             for (Map.Entry<NamespacedKey, AdvancementProgress> entry : progressMap.entrySet()) {
                 writer.name(entry.getKey().toString());
@@ -182,6 +178,24 @@ public class PlayerProgress {
             }
             writer.endObject();
         }
+        return com.google.gson.JsonParser.parseString(stringWriter.toString()).getAsJsonObject();
+    }
+
+    private synchronized void saveAsync() {
+        if (saveQueued) {
+            return;
+        }
+        saveQueued = true;
+        Bukkit.getScheduler().runTaskAsynchronously(SFAdvancements.instance(), () -> {
+            try {
+                save(true);
+            } catch (IOException e) {
+                synchronized (PlayerProgress.this) {
+                    saveQueued = false;
+                }
+                SFAdvancements.logger().log(Level.SEVERE, e, () -> "无法异步保存玩家进度");
+            }
+        });
     }
 
     /**
@@ -190,7 +204,7 @@ public class PlayerProgress {
      * @param key the key of the advancement
      * @return if the advancement is completed
      */
-    public boolean isCompleted(NamespacedKey key) {
+    public synchronized boolean isCompleted(NamespacedKey key) {
         if (!progressMap.containsKey(key)) {
             return false;
         }
